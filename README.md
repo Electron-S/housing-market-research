@@ -60,6 +60,3 @@ python 05_code/md_to_docx_converter.py songpa-jamsil_KR \
 - `05_code/improve_docx_design.py`
 - `05_code/count_docx_chars.py`
 
-## 참고
-
-이 프로젝트는 `KCS-AI`에서 분리한 주택시장 조사 전용 파생 워크스페이스다. 건설사 경영제안서 관련 자료는 포함하지 않았다.
