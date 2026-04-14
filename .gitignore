@@ -1,0 +1,32 @@
+# Claude
+CLAUDE.md
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Data (원천 데이터는 공유하지 않음)
+01_data/*.xlsx
+01_data/*.csv
+01_data/*.xls
