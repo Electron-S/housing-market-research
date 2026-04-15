@@ -461,9 +461,9 @@ def process_document(input_path, output_path=None):
     return output_path
 
 def process_all_documents():
-    """07_final_output의 전체 파일을 처리"""
-    input_dir = r"c:\Users\gaebalai\KCS-AI\07_final_output"
-    output_dir = r"c:\Users\gaebalai\KCS-AI\07_final_output_designed"
+    """05_output의 전체 파일을 처리"""
+    input_dir = r"c:\Users\gaebalai\KCS-AI\05_output"
+    output_dir = r"c:\Users\gaebalai\KCS-AI\05_output_designed"
 
     # 출력 디렉토리를 생성
     os.makedirs(output_dir, exist_ok=True)

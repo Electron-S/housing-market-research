@@ -1,11 +1,11 @@
 """mermaid로 생성한 이미지를 DOCX 부동산 분석 보고서에 삽입한다.
 
 Usage:
-    python insert_images.py 07_final_output_kr/seongsu-residential_KR.docx
-    python insert_images.py 07_final_output_kr/seongsu-residential_KR.docx 07_final_output_kr/seongsu-residential_KR_out.docx
+    python insert_images.py 05_output/seongsu-residential_KR.docx
+    python insert_images.py 05_output/seongsu-residential_KR.docx 05_output/seongsu-residential_KR_out.docx
 
 분석대상 ID는 DOCX 파일명(stem)에서 자동 검출한다.
-이미지는 06_middle_output/<분석대상 ID>/images/ 하위의 causal.png, kpi_tree.png를 사용.
+이미지는 04_workspace/<분석대상 ID>/images/ 하위의 causal.png, kpi_tree.png를 사용.
 
 삽입 로직:
   - 「※그림1은 별도 이미지로 삽입」 등의 플레이스홀더 단락을 이미지로 치환
@@ -47,11 +47,11 @@ def extract_target_id(docx_path: str) -> str:
 
 def resolve_image_paths(target_id: str) -> dict:
     """분석대상 ID로부터 이미지 경로를 해석한다"""
-    img_dir = ROOTDIR / "06_middle_output" / target_id / "images"
+    img_dir = ROOTDIR / "04_workspace" / target_id / "images"
     if not img_dir.exists():
         # _KR 접미사 없는 경우도 탐색
         bare = re.sub(r'_KR$', '', target_id)
-        alt_dir = ROOTDIR / "06_middle_output" / bare / "images"
+        alt_dir = ROOTDIR / "04_workspace" / bare / "images"
         if alt_dir.exists():
             img_dir = alt_dir
     paths = {
@@ -133,7 +133,7 @@ def insert_images(docx_path, output_path, image_paths):
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python insert_images.py <docx_path> [output_path]")
-        print("Example: python insert_images.py 07_final_output/184226.docx")
+        print("Example: python insert_images.py 05_output/184226.docx")
         sys.exit(1)
 
     docx_in = sys.argv[1]

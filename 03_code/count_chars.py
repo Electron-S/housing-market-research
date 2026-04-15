@@ -1,7 +1,7 @@
 import re
 import sys
 
-filepath = sys.argv[1] if len(sys.argv) > 1 else "06_middle_output/035890_KR/STEP11_제안서_draft.md"
+filepath = sys.argv[1] if len(sys.argv) > 1 else "04_workspace/035890_KR/STEP11_제안서_draft.md"
 
 with open(filepath, "r", encoding="utf-8") as f:
     text = f.read()

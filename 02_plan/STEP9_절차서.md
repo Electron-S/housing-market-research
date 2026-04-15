@@ -39,7 +39,7 @@ STEP7의 비교단지 실거래가와 차등지수를 활용해 평형별 적정
 ```
 
 ## 산출물
-`06_middle_output/[target_id]_KR/STEP9_output.md`
+`04_workspace/[target_id]_KR/STEP9_output.md`
 
 ### 포맷 (일반)
 ```markdown

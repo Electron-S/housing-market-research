@@ -7,9 +7,9 @@ STEP1~9의 내용을 독자가 읽기 쉬운 보고서 구조로 재편한다.
 ## 입력
 - STEP1~9 output 전체
 - 산출물 유형에 맞는 템플릿:
-  - `04_plan/템플릿_권역시장브리프.md`
-  - `04_plan/템플릿_사업지입지분석.md`
-  - `04_plan/템플릿_경쟁단지비교.md`
+  - `02_plan/템플릿_권역시장브리프.md`
+  - `02_plan/템플릿_사업지입지분석.md`
+  - `02_plan/템플릿_경쟁단지비교.md`
 
 ## 작업 체크리스트
 - [ ] 산출물 유형 확인 후 해당 템플릿 선택
@@ -29,7 +29,7 @@ STEP1~9의 내용을 독자가 읽기 쉬운 보고서 구조로 재편한다.
 | 경쟁 단지 비교 | `STEP10_경쟁비교_draft.md` |
 
 ## 산출물
-`06_middle_output/[target_id]_KR/STEP10_[유형]_draft.md`
+`04_workspace/[target_id]_KR/STEP10_[유형]_draft.md`
 
 ### 기본 보고서 구조
 ```markdown
@@ -49,11 +49,11 @@ STEP1~9의 내용을 독자가 읽기 쉬운 보고서 구조로 재편한다.
 ## 이후 변환 절차
 ```bash
 # DOCX 변환
-python 05_code/md_to_docx_converter.py [target_id]_KR --title "[대상] 부동산 분석 보고서"
+python 03_code/md_to_docx_converter.py [target_id]_KR --title "[대상] 부동산 분석 보고서"
 
 # 디자인 보정
-python 05_code/improve_docx_design.py 07_final_output_kr/[target_id].docx
+python 03_code/improve_docx_design.py 05_output/[target_id].docx
 
 # AI 품질 평가
-python 05_code/multi_model_evaluate.py [target_id]_KR
+python 03_code/multi_model_evaluate.py [target_id]_KR
 ```

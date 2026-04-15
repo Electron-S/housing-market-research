@@ -21,7 +21,7 @@
 - [ ] 실수요층 관점에서 입지 강점·약점 서술
 
 ## 산출물
-`06_middle_output/[target_id]_KR/STEP6_output.md`
+`04_workspace/[target_id]_KR/STEP6_output.md`
 
 ### 포맷
 ```markdown

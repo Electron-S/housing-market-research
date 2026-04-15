@@ -25,7 +25,7 @@
 > 예: "인근 7구역 1순위 평균 242:1, 단기 완판" → 대기 수요 존재 확인
 
 ## 산출물
-`06_middle_output/[target_id]_KR/STEP5_output.md`
+`04_workspace/[target_id]_KR/STEP5_output.md`
 
 ### 포맷
 ```markdown

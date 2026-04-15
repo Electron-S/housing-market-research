@@ -17,7 +17,7 @@
 - [ ] 산출물 유형에 따른 필수 STEP 확인 (마스터 워크플로우 참조)
 
 ## 산출물
-`06_middle_output/[target_id]_KR/STEP1_output.md`
+`04_workspace/[target_id]_KR/STEP1_output.md`
 
 ### 포맷
 ```markdown

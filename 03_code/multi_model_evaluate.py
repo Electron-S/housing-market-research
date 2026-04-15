@@ -5,14 +5,14 @@ AI 모델로 부동산 분석 보고서를 평가하고,
 모든 항목 A 달성까지 반복 개선을 지원.
 
 사용법:
-    python 05_code/multi_model_evaluate.py <분석대상 ID>
-    python 05_code/multi_model_evaluate.py seongsu-residential_KR
-    python 05_code/multi_model_evaluate.py songpa-helio-city_KR
+    python 03_code/multi_model_evaluate.py <분석대상 ID>
+    python 03_code/multi_model_evaluate.py seongsu-residential_KR
+    python 03_code/multi_model_evaluate.py songpa-helio-city_KR
 
-입력 파일 탐색 순서 (07_final_output_kr/):
+입력 파일 탐색 순서 (05_output/):
     1. {대상ID}_designed.docx
     2. {대상ID}.docx
-    3. (fallback) 06_middle_output/{대상ID}/STEP11_보고서_draft.md
+    3. (fallback) 04_workspace/{대상ID}/STEP11_보고서_draft.md
 
 환경변수 (.env 파일):
     ANTHROPIC_API_KEY  - Anthropic API 키 (Claude)
@@ -118,16 +118,16 @@ def find_report_text(target_id: str) -> tuple[str, str]:
     """
     보고서 텍스트와 소스 경로를 반환.
     탐색 순서:
-      1. 07_final_output_kr/{대상ID}_designed.docx
-      2. 07_final_output_kr/{대상ID}.docx
-      3. 06_middle_output/{대상ID}/STEP11_보고서_draft.md (fallback)
+      1. 05_output/{대상ID}_designed.docx
+      2. 05_output/{대상ID}.docx
+      3. 04_workspace/{대상ID}/STEP11_보고서_draft.md (fallback)
     """
     bare = extract_bare_id(target_id)
     docx_candidates = [
-        ROOTDIR / "07_final_output_kr" / f"{bare}_designed.docx",
-        ROOTDIR / "07_final_output_kr" / f"{bare}.docx",
-        ROOTDIR / "07_final_output_kr" / f"{target_id}_designed.docx",
-        ROOTDIR / "07_final_output_kr" / f"{target_id}.docx",
+        ROOTDIR / "05_output" / f"{bare}_designed.docx",
+        ROOTDIR / "05_output" / f"{bare}.docx",
+        ROOTDIR / "05_output" / f"{target_id}_designed.docx",
+        ROOTDIR / "05_output" / f"{target_id}.docx",
     ]
     for path in docx_candidates:
         if path.exists():
@@ -136,8 +136,8 @@ def find_report_text(target_id: str) -> tuple[str, str]:
 
     # fallback: MD draft
     md_candidates = [
-        ROOTDIR / "06_middle_output" / target_id / "STEP10_보고서_draft.md",
-        ROOTDIR / "06_middle_output" / target_id / "STEP11_output.md",
+        ROOTDIR / "04_workspace" / target_id / "STEP10_보고서_draft.md",
+        ROOTDIR / "04_workspace" / target_id / "STEP11_output.md",
     ]
     for path in md_candidates:
         if path.exists():
@@ -221,7 +221,7 @@ def format_summary_table(results: dict) -> str:
 
 
 def save_results(target_id: str, iteration: int, results: dict, all_a: bool):
-    output_dir = ROOTDIR / "06_middle_output" / target_id
+    output_dir = ROOTDIR / "04_workspace" / target_id
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / "STEP12_output.md"
 

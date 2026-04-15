@@ -50,7 +50,7 @@ PROPOSER_NAME = 'gaebalai'
 
 # 경로 설정
 ROOTDIR = Path(__file__).resolve().parent.parent
-MIDDLE_OUTPUT_DIR = ROOTDIR / '06_middle_output'
+MIDDLE_OUTPUT_DIR = ROOTDIR / '04_workspace'
 PROPERTY_MASTER_PATH = MIDDLE_OUTPUT_DIR / 'property_master.csv'
 
 # ==================== 유틸리티 함수 ====================
@@ -509,7 +509,7 @@ def main():
     parser.add_argument('--lang', choices=['ko'], default='ko', help='출력 언어 (기본: ko)')
     parser.add_argument('--input', help='입력 Markdown 파일명(기본: STEP11_보고서_draft.md)')
     parser.add_argument('--output', help='출력 DOCX 파일 경로')
-    parser.add_argument('--master', help='분석대상 마스터 CSV(절대 경로 또는 06_middle_output 바로 아래 상대 경로)')
+    parser.add_argument('--master', help='분석대상 마스터 CSV(절대 경로 또는 04_workspace 바로 아래 상대 경로)')
     parser.add_argument('--title', help='표지 타이틀 덮어쓰기')
     parser.add_argument('--date', help='작성일 덮어쓰기')
     parser.add_argument('--proposer', help='작성자 덮어쓰기(기본: gaebalai)')

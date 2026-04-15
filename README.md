@@ -1,62 +1,115 @@
 # Housing Market Research
 
-한국 주택시장 조사와 사업지 검토를 위한 리서치 워크스페이스다. 권역 브리프, 사업지 입지 분석, 경쟁 단지 비교를 빠르게 만들 수 있도록 구성했다.
+재개발·재건축 사업지 시장조사 및 적정분양가 검토를 위한 리서치 워크스페이스다. [KCS-AI](https://github.com/gaebalai/KCS-AI) 건설경영 제안서 파이프라인을 기반으로, 한국 부동산 분양 시장에 특화된 15단계 분석·집필 파이프라인으로 재구성했다.
 
-## 목적
+## 산출물
 
-- 권역별 주택시장 브리프 작성
-- 신규 사업지 입지 검토
-- 경쟁 단지 비교표와 해설 작성
-- 정책 변화가 분양성에 미치는 영향 정리
-- Markdown 초안을 DOCX 보고서로 변환
+| 유형 | 설명 |
+|---|---|
+| 아파트 시장조사 보고서 | 재개발·재건축 사업지 적정분양가 검토 |
+| 상가 시장조사 보고서 | 근린생활시설 적정분양가 검토 |
+| 권역 시장 브리프 | 권역별 가격·거래·청약 동향 요약 |
+| 사업지 입지 분석 | 교통·학군·인프라·개발계획 분석 |
+| 경쟁 단지 비교 | 비교 단지 선정·가격·분양률 비교 |
 
 ## 시작 순서
 
-1. [04_plan/주택시장조사_마스터_워크플로우.md](04_plan/주택시장조사_마스터_워크플로우.md)를 읽는다.
-2. 아래 템플릿 중 하나를 고른다.
-   - [04_plan/템플릿_권역시장브리프.md](04_plan/템플릿_권역시장브리프.md)
-   - [04_plan/템플릿_사업지입지분석.md](04_plan/템플릿_사업지입지분석.md)
-   - [04_plan/템플릿_경쟁단지비교.md](04_plan/템플릿_경쟁단지비교.md)
-3. `06_middle_output/[target_id]_KR/` 폴더를 만든다.
-4. 중간 산출물을 작성하고 필요하면 DOCX로 변환한다.
+1. [`02_plan/주택시장조사_마스터_워크플로우.md`](02_plan/주택시장조사_마스터_워크플로우.md)를 읽는다.
+2. 산출물 유형에 맞는 템플릿을 고른다.
+3. `04_workspace/[target_id]_KR/` 폴더를 만든다.
+4. 각 STEP 절차서는 해당 STEP 착수 직전에만 읽는다.
 
 ## 디렉터리 구조
 
 ```text
 housing-market-research/
-├── 00_ref/                    # 개요·전략 문서
-├── 01_data/                   # 원천 데이터 보관
-├── 04_plan/                   # 워크플로우와 템플릿
-├── 05_code/                   # DOCX 변환·이미지 삽입 등 유틸
-├── 06_middle_output/          # 권역/사업지별 작업공간
-└── 07_final_output_kr/        # 최종 보고서
+├── 00_ref/                          # 프로젝트 개요·전략
+├── 01_data/                         # 원천 데이터
+├── 02_plan/                         # 워크플로우·절차서·템플릿
+│   ├── 주택시장조사_마스터_워크플로우.md  ← 항상 먼저 읽기
+│   ├── STEP1_절차서.md ~ STEP10_절차서.md
+│   └── 템플릿_*.md
+├── 03_code/                         # Python 유틸
+├── 04_workspace/
+│   ├── 공통_KR/                     # 주택시장 공통 KB (STEP0 수행 후 생성)
+│   └── [target_id]_KR/             # 사업지별 작업공간
+│       ├── STEP1_output.md ~ STEP10_output.md
+│       ├── STEP11_[유형]_draft.md
+│       └── images/
+└── 05_output/              # 최종 DOCX
 ```
+
+## 15단계 워크플로우
+
+| STEP | 이름 | 산출물 |
+|---|---|---|
+| 0 | 주택시장 공통정보 수집 (사전 1회) | `공통_KR/*.md` |
+| 1 | 사업지 선정·기본정보 | `STEP1_output.md` |
+| 2 | 사업 개요 분석 | `STEP2_output.md` |
+| 3 | 거시·정책 환경 | `STEP3_output.md` |
+| 4 | 지역 시장 환경 | `STEP4_output.md` |
+| 5 | 입지 분석 | `STEP5_output.md` |
+| 6 | 비교 단지 분석 | `STEP6_output.md` |
+| 7 | 수급 구조화 | `STEP7_output.md` |
+| 8 | 분양가 산정 | `STEP8_output.md` |
+| 9 | 분양성 평가·리스크 | `STEP9_output.md` |
+| 10 | 보고서 장구성 설계 | `STEP10_output.md` |
+| 11 | 보고서 집필 | `STEP11_[유형]_draft.md` |
+| 12 | 품질 리뷰 (MD) | 5기준 A/B/C 평가 → 미달 시 수정 반복 |
+| 13 | MD→DOCX 변환 | `[target_id]_draft.docx` |
+| 14 | 품질 리뷰 (DOCX) | 서식·데이터·가독성 점검 |
+| 15 | 최종화 | `[target_id]_designed.docx` |
+
+## 환경 설정
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+API 키는 `.env` 파일에 작성한다 (`.env.example` 참고):
+
+```
+ANTHROPIC_API_KEY=...
+OPENAI_API_KEY=...
+GEMINI_API_KEY=...
+```
+
+## 주요 스크립트
+
+| 스크립트 | 용도 | 사용 STEP |
+|---|---|---|
+| `md_to_docx_converter.py` | Markdown → Word 변환 | 13 |
+| `insert_images.py` | DOCX에 이미지 삽입 | 13 |
+| `improve_docx_design.py` | 폰트·표·여백 디자인 보정 | 13 |
+| `count_docx_chars.py` | DOCX 문자수 확인 | 13, 14 |
+| `count_chars.py` | Markdown 문자수 확인 | 11, 12 |
+| `analyze_docx.py` | DOCX 구조 분석 | 14 |
+| `multi_model_evaluate.py` | AI 멀티모델 품질 평가 | 12 |
+
+```bash
+# 실행 예시
+python 03_code/md_to_docx_converter.py seongsu-residential_KR \
+  --title "성수 주거지역 시장조사 보고서"
+
+python 03_code/multi_model_evaluate.py seongsu-residential_KR
+```
+
+## 주요 데이터 소스
+
+- 국토교통부 실거래가 공개시스템
+- 한국부동산원 R-ONE
+- KB부동산
+- 청약홈 (청약 경쟁률·당첨가점)
+- KOSIS 국가통계포털
+- 한국은행 ECOS
+- 서울열린데이터광장
+- 지자체 도시계획·정비사업 공개자료
 
 ## 핵심 문서
 
-- 프로젝트 개요: [00_ref/부동산_분석_프로젝트_개요.md](00_ref/부동산_분석_프로젝트_개요.md)
-- 프로젝트 전략: [00_ref/부동산_분석_프로젝트_전략.md](00_ref/부동산_분석_프로젝트_전략.md)
-- 주택시장조사 마스터: [04_plan/주택시장조사_마스터_워크플로우.md](04_plan/주택시장조사_마스터_워크플로우.md)
-- 권역 브리프 템플릿: [04_plan/템플릿_권역시장브리프.md](04_plan/템플릿_권역시장브리프.md)
-- 사업지 입지 템플릿: [04_plan/템플릿_사업지입지분석.md](04_plan/템플릿_사업지입지분석.md)
-- 경쟁 단지 비교 템플릿: [04_plan/템플릿_경쟁단지비교.md](04_plan/템플릿_경쟁단지비교.md)
-- 샘플 리포트: [06_middle_output/seongsu-residential_KR/STEP11_보고서_draft.md](06_middle_output/seongsu-residential_KR/STEP11_보고서_draft.md)
-
-## 빠른 예시
-
-```bash
-mkdir -p 06_middle_output/songpa-jamsil_KR/images
-
-python 05_code/md_to_docx_converter.py songpa-jamsil_KR \
-  --title "송파·잠실 권역 주택시장 브리프"
-```
-
-## 코드 재사용 범위
-
-다음 스크립트는 도메인과 무관하게 그대로 쓸 수 있다.
-
-- `05_code/md_to_docx_converter.py`
-- `05_code/insert_images.py`
-- `05_code/improve_docx_design.py`
-- `05_code/count_docx_chars.py`
-
+- [00_ref/부동산_분석_프로젝트_개요.md](00_ref/부동산_분석_프로젝트_개요.md)
+- [00_ref/부동산_분석_프로젝트_전략.md](00_ref/부동산_분석_프로젝트_전략.md)
+- [02_plan/주택시장조사_마스터_워크플로우.md](02_plan/주택시장조사_마스터_워크플로우.md)
+- [02_plan/부동산_분석_워크플로우.md](02_plan/부동산_분석_워크플로우.md)

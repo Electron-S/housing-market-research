@@ -20,7 +20,7 @@
 - [ ] 각 수치에 출처와 기준 시점 표기
 
 ## 산출물
-`06_middle_output/[target_id]_KR/STEP3_output.md`
+`04_workspace/[target_id]_KR/STEP3_output.md`
 
 ### 포맷
 ```markdown
