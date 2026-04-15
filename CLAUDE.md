@@ -7,6 +7,7 @@ This file is the operating guide for Claude Code in this repository.
 - 사람용 개요나 실행 예시가 필요하면 [`README.md`](README.md)를 본다.
 - 실제 작업 절차의 정본은 [`02_plan/주택시장조사_마스터_워크플로우.md`](02_plan/주택시장조사_마스터_워크플로우.md)다.
 - Claude는 이 문서를 "행동 규칙"으로 사용하고, 프로젝트 설명은 반복하지 않는다.
+- 기본 보고서 유형은 `아파트 시장조사 보고서`와 `상가 시장조사 보고서` 두 가지다.
 
 ## Required Reading Order
 
@@ -14,8 +15,10 @@ This file is the operating guide for Claude Code in this repository.
 
 1. [`02_plan/주택시장조사_마스터_워크플로우.md`](02_plan/주택시장조사_마스터_워크플로우.md)를 먼저 읽어 산출물 유형과 전체 플로우를 파악한다.
 2. 현재 요청이 어떤 산출물인지 특정한다.
-3. 필요한 STEP에 들어가기 직전에 해당 `02_plan/STEPx_절차서.md`만 읽는다.
-4. 아직 `04_workspace/공통_KR/`가 없고 STEP0 선행이 필요한 작업이면 STEP0부터 시작한다.
+3. 아파트 시장조사면 [`02_plan/아파트시장조사_워크플로우.md`](02_plan/아파트시장조사_워크플로우.md), 상가 시장조사면 [`02_plan/상가시장조사_워크플로우.md`](02_plan/상가시장조사_워크플로우.md)를 읽는다.
+4. 필요한 STEP에 들어가기 직전에 해당 `02_plan/STEPx_절차서.md`만 읽는다.
+5. 아직 `04_workspace/공통_KR/`가 없고 STEP0 선행이 필요한 작업이면 STEP0부터 시작한다.
+6. 사용자가 `사업구역에 대해 아파트 시장조사 STEP1부터 진행해`, `사업구역에 대해 상가 시장조사 STEP1부터 진행해`처럼 지시하면 해당 보고서 유형으로 STEP1부터 즉시 시작한다.
 
 금지:
 
@@ -25,11 +28,13 @@ This file is the operating guide for Claude Code in this repository.
 
 ## Output Rules
 
+- 원본 수집 자료는 `01_data/[target_id]/`에 저장하고, 가공·집필 산출물은 `04_workspace/[target_id]_[agent]_KR/`에 저장한다.
 - 작업 폴더는 `04_workspace/[target_id]_[agent]_KR/`를 기본으로 사용한다.
 - 중간 산출물은 `STEP1_output.md`부터 `STEP10_output.md`까지 저장한다.
 - 집필 파일은 `STEP11_[유형]_draft.md` 형식을 사용한다.
 - 리뷰 패킷은 `STEP12_review_packet_[agent].md`, 리뷰 결과는 `STEP12_output_[agent].md`를 사용한다.
-- DOCX 초안은 `report_draft_[agent].docx`, 최종본은 `report_designed_[agent].docx`를 사용한다.
+- DOCX 초안은 `report_draft_[agent].docx`를 작업 폴더에 저장한다.
+- 최종 DOCX는 `05_output/`에 저장하고, 파일명은 기본적으로 `report_designed_[agent].docx` 또는 대상 ID 기반 최종본으로 관리한다.
 
 ## Analysis Rules
 
@@ -39,12 +44,17 @@ This file is the operating guide for Claude Code in this repository.
 4. 비교 단지 선정 근거를 반드시 적는다.
 5. 입지 설명은 교통, 학군, 인프라를 수요층과 연결해서 쓴다.
 6. 정책 변수와 공급 리스크를 빠뜨리지 않는다.
-7. 결론은 실행 가능한 문장으로 쓴다.
+7. GS건설 관점에서 경쟁사 브랜드, 상품, 가격, 분양 성과를 비교하고 대응 포인트를 정리한다.
+8. 사업구역이 특정되면 해당 구역에 대한 GS건설의 사업 내용을 인터넷 검색으로 먼저 확인하고, 확인된 사실과 추정 내용을 분리해 적는다.
+9. STEP별로 수집한 원본 자료는 가능한 한 `01_data/[target_id]/`에 먼저 저장하고, 작업 공간에는 가공 결과만 남긴다.
+10. 적정 분양가 제안은 보수적으로 깎지 말고, 근거가 유지되는 범위에서 약간 공격적으로 설정한다.
+11. 결론은 실행 가능한 문장으로 쓴다.
 
 ## Writing Rules
 
 - 광고 문구처럼 쓰지 않는다.
 - 추상적 시장 설명보다 가격, 수요, 공급, 흡수 가능성 판단을 우선한다.
+- 경쟁 비교가 들어가는 보고서는 GS건설이 취해야 할 차별화 포인트와 방어 포인트를 함께 적는다.
 - 출처는 자료명 또는 URL 수준으로 특정하고 기준 시점을 함께 적는다.
 - 데이터가 비어 있으면 단정하지 말고, 필요한 추가 확인 항목을 적는다.
 
@@ -66,7 +76,7 @@ STEP12에서는 아래 5개 기준으로 A/B/C 평가한다.
 
 - `md_to_docx_converter.py`: `_KR` 접미사 기준으로 한국어 설정을 자동 적용한다.
 - `insert_images.py`: 한국어 이미지 플레이스홀더를 감지해 삽입한다.
-- `improve_docx_design.py`: 디자인 보정 후 기본적으로 `report_designed_[agent].docx`를 생성한다.
+- `improve_docx_design.py`: 디자인 보정 후 작업 폴더에 `report_designed_[agent].docx`를 만들고, 최종본을 `05_output/`에도 배치한다.
 - `count_docx_chars.py`: DOCX 문자수를 검증한다.
 - `count_chars.py`: Markdown 초안 문자수를 검증한다.
 - `analyze_docx.py`: DOCX 구조를 분석한다.

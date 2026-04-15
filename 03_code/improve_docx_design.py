@@ -16,6 +16,7 @@
 import os
 import sys
 import re
+import shutil
 import tempfile
 from pathlib import Path
 from docx import Document
@@ -144,6 +145,17 @@ def build_header_label(target_id):
     """헤더에 표시할 분석대상 식별자를 생성"""
     target_id = (target_id or "").strip()
     return target_id or "unknown-target"
+
+
+def build_final_output_path(target_id, designed_path):
+    """최종본을 05_output 아래에 배치할 경로를 생성"""
+    target_id = (target_id or "").strip()
+    final_dir = ROOTDIR / "05_output"
+    final_dir.mkdir(parents=True, exist_ok=True)
+
+    if target_id and target_id != "unknown-target":
+        return final_dir / f"{target_id}_designed.docx"
+    return final_dir / Path(designed_path).name
 
 def extract_company_name(doc):
     """문서에서 표지의 대상명을 추출"""
@@ -497,7 +509,11 @@ def process_document(input_path, output_path=None):
             os.remove(tmp_path)
     print(f"  저장 완료: {output_path}")
 
-    return output_path
+    final_output_path = build_final_output_path(target_id, output_path)
+    shutil.copy2(output_path, final_output_path)
+    print(f"  최종본 배치 완료: {final_output_path}")
+
+    return str(final_output_path)
 
 def process_all_documents():
     """04_workspace 하위의 draft DOCX를 일괄 처리"""
@@ -517,7 +533,8 @@ def process_all_documents():
         except Exception as e:
             print(f"  오류 ({input_path}): {e}")
 
-    print(f"\n완료! 출력 경로: {workspace_dir}")
+    print(f"\n완료! 작업본 경로: {workspace_dir}")
+    print(f"최종본 경로: {ROOTDIR / '05_output'}")
 
 # ========================================
 # 메인

@@ -15,6 +15,7 @@ STEP12 리뷰 패킷 생성 스크립트 — 부동산 분석 보고서
     1. 04_workspace/{대상ID}/report_designed.docx
     2. 04_workspace/{대상ID}/report_draft.docx
     3. 04_workspace/{대상ID}/STEP11_보고서_draft.md
+    4. 04_workspace/{대상ID}/STEP11_*_draft.md
 """
 
 import argparse
@@ -91,12 +92,16 @@ def find_report_text(target_id: str) -> tuple[str, Path]:
         if path.exists():
             return extract_docx_text(path), path
 
+    workspace_dir = ROOTDIR / "04_workspace" / target_id
     md_candidates = [
         ROOTDIR / "04_workspace" / target_id / "STEP11_보고서_draft.md",
+        ROOTDIR / "04_workspace" / target_id / "STEP11_상가보고서_draft.md",
+        ROOTDIR / "04_workspace" / target_id / "STEP11_아파트보고서_draft.md",
         ROOTDIR / "04_workspace" / target_id / "STEP10_사업지분석_draft.md",
         ROOTDIR / "04_workspace" / target_id / "STEP10_output.md",
         ROOTDIR / "04_workspace" / target_id / "STEP11_output.md",
     ]
+    md_candidates.extend(sorted(workspace_dir.glob("STEP11_*_draft.md")))
     for path in md_candidates:
         if path.exists():
             return path.read_text(encoding="utf-8"), path

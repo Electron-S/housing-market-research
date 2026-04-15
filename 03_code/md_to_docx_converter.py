@@ -111,6 +111,30 @@ def extract_agent_tag(target_id):
         return parts[-1]
     return ''
 
+
+def resolve_input_markdown(target_dir: Path, explicit_input: str | None, preset_input: str) -> Path:
+    """입력 Markdown 파일을 유연하게 탐색"""
+    if explicit_input:
+        return target_dir / explicit_input
+
+    preferred = target_dir / preset_input
+    if preferred.exists():
+        return preferred
+
+    typed_candidates = [
+        target_dir / "STEP11_상가보고서_draft.md",
+        target_dir / "STEP11_아파트보고서_draft.md",
+    ]
+    for candidate in typed_candidates:
+        if candidate.exists():
+            return candidate
+
+    glob_candidates = sorted(target_dir.glob("STEP11_*_draft.md"))
+    if glob_candidates:
+        return glob_candidates[0]
+
+    return preferred
+
 # ==================== 포맷 설정 함수 ====================
 
 def set_font(run, font_name=FONT_NAME, size_pt=FONT_SIZE_PT, bold=False, italic=False):
@@ -520,7 +544,7 @@ def main():
     )
     parser.add_argument('target_id', help='분석대상 ID (예: seongsu-residential_KR, songpa-helio-city_KR)')
     parser.add_argument('--lang', choices=['ko'], default='ko', help='출력 언어 (기본: ko)')
-    parser.add_argument('--input', help='입력 Markdown 파일명(기본: STEP11_보고서_draft.md)')
+    parser.add_argument('--input', help='입력 Markdown 파일명(기본: STEP11_보고서_draft.md, 없으면 STEP11_*_draft.md 자동 탐색)')
     parser.add_argument('--output', help='출력 DOCX 파일 경로')
     parser.add_argument('--master', help='분석대상 마스터 CSV(절대 경로 또는 04_workspace 바로 아래 상대 경로)')
     parser.add_argument('--title', help='표지 타이틀 덮어쓰기')
@@ -535,8 +559,7 @@ def main():
 
     # 파일 경로 설정
     target_dir = MIDDLE_OUTPUT_DIR / target_id
-    input_name = args.input or preset['input_filename']
-    md_file = target_dir / input_name
+    md_file = resolve_input_markdown(target_dir, args.input, preset['input_filename'])
     default_output_name = preset['output_filename']
     if agent_tag:
         default_output_name = f'report_draft_{agent_tag}.docx'
