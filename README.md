@@ -72,14 +72,6 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-외부 API를 직접 호출하는 확장 스크립트를 쓸 때만 `.env` 파일을 사용한다 (`.env.example` 참고):
-
-```
-ANTHROPIC_API_KEY=...
-OPENAI_API_KEY=...
-GEMINI_API_KEY=...
-```
-
 설치 후 빠른 검증:
 
 ```bash
