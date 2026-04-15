@@ -46,12 +46,14 @@ COVER_PRESETS = {
 }
 COVER_TITLE = COVER_PRESETS['ko']['title']
 PROPOSAL_DATE = COVER_PRESETS['ko']['date']
-PROPOSER_NAME = 'gaebalai'
+PROPOSER_NAME = ''
 
 # 경로 설정
 ROOTDIR = Path(__file__).resolve().parent.parent
 MIDDLE_OUTPUT_DIR = ROOTDIR / '04_workspace'
 PROPERTY_MASTER_PATH = MIDDLE_OUTPUT_DIR / 'property_master.csv'
+
+KNOWN_AGENT_TAGS = {'claude', 'codex'}
 
 # ==================== 유틸리티 함수 ====================
 
@@ -99,6 +101,15 @@ def get_target_info(target_id, master_csv=None, lang='ko'):
 def count_chars(text):
     """문자수 카운트(공백·개행 제외)"""
     return len(re.sub(r'\s', '', text))
+
+
+def extract_agent_tag(target_id):
+    """target_id 끝의 에이전트 태그를 추출"""
+    bare_id = re.sub(r'_KR$', '', str(target_id))
+    parts = bare_id.split('_')
+    if parts and parts[-1] in KNOWN_AGENT_TAGS:
+        return parts[-1]
+    return ''
 
 # ==================== 포맷 설정 함수 ====================
 
@@ -290,9 +301,11 @@ def create_cover_page(doc, target_info, cover_metadata=None, cover_config=None):
     set_font(p.runs[0])
 
     # 제안자
-    p = doc.add_paragraph(f'{cfg["proposer_label"]}: {cfg["proposer"]}')
-    set_paragraph_format(p, alignment=WD_PARAGRAPH_ALIGNMENT.LEFT)
-    set_font(p.runs[0])
+    proposer = (cfg.get('proposer') or '').strip()
+    if proposer:
+        p = doc.add_paragraph(f'{cfg["proposer_label"]}: {proposer}')
+        set_paragraph_format(p, alignment=WD_PARAGRAPH_ALIGNMENT.LEFT)
+        set_font(p.runs[0])
 
     # 페이지 나눔(표지 후에만)
     doc.add_page_break()
@@ -512,18 +525,22 @@ def main():
     parser.add_argument('--master', help='분석대상 마스터 CSV(절대 경로 또는 04_workspace 바로 아래 상대 경로)')
     parser.add_argument('--title', help='표지 타이틀 덮어쓰기')
     parser.add_argument('--date', help='작성일 덮어쓰기')
-    parser.add_argument('--proposer', help='작성자 덮어쓰기(기본: gaebalai)')
+    parser.add_argument('--proposer', help='작성자 덮어쓰기(기본: 표기 안 함)')
     args = parser.parse_args()
 
     target_id = args.target_id
     lang = args.lang
     preset = COVER_PRESETS[lang]
+    agent_tag = extract_agent_tag(target_id)
 
     # 파일 경로 설정
     target_dir = MIDDLE_OUTPUT_DIR / target_id
     input_name = args.input or preset['input_filename']
     md_file = target_dir / input_name
-    output_file = Path(args.output) if args.output else target_dir / preset['output_filename']
+    default_output_name = preset['output_filename']
+    if agent_tag:
+        default_output_name = f'report_draft_{agent_tag}.docx'
+    output_file = Path(args.output) if args.output else target_dir / default_output_name
 
     cover_override = {
         'title': args.title,

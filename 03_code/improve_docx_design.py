@@ -16,6 +16,7 @@
 import os
 import sys
 import re
+import tempfile
 from pathlib import Path
 from docx import Document
 from docx.shared import Pt, Inches, RGBColor, Cm, Twips
@@ -49,6 +50,7 @@ FONTS = {
 }
 
 ROOTDIR = Path(__file__).resolve().parent.parent
+KNOWN_AGENT_TAGS = {'claude', 'codex'}
 
 # ========================================
 # 헬퍼 함수
@@ -129,6 +131,13 @@ def extract_target_id(filepath):
         if filename.endswith(suffix):
             filename = filename[:-len(suffix)]
     return filename
+
+
+def extract_agent_tag_from_filename(filepath):
+    """파일명에서 report_*_<agent>.docx 형태의 에이전트 태그를 추출"""
+    stem = Path(filepath).stem
+    match = re.search(r'_(claude|codex)$', stem)
+    return match.group(1) if match else ""
 
 
 def build_header_label(target_id):
@@ -446,8 +455,11 @@ def process_document(input_path, output_path=None):
 
     if output_path is None:
         input_file = Path(input_path)
+        agent_tag = extract_agent_tag_from_filename(input_file.name)
         if input_file.name == "report_draft.docx":
             output_path = str(input_file.with_name("report_designed.docx"))
+        elif agent_tag and input_file.name == f"report_draft_{agent_tag}.docx":
+            output_path = str(input_file.with_name(f"report_designed_{agent_tag}.docx"))
         else:
             base, ext = os.path.splitext(input_path)
             output_path = f"{base}_designed{ext}"
@@ -468,8 +480,21 @@ def process_document(input_path, output_path=None):
     improve_paragraphs(doc)
     add_header_footer(doc, target_id, company_name)
 
-    # 저장
-    doc.save(output_path)
+    # 저장 중 다른 프로세스가 부분 저장본을 읽지 않도록 임시 파일에 쓴 뒤 교체
+    output_path_obj = Path(output_path)
+    output_path_obj.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(
+        prefix=f".{output_path_obj.stem}_",
+        suffix=output_path_obj.suffix,
+        dir=str(output_path_obj.parent),
+    )
+    os.close(fd)
+    try:
+        doc.save(tmp_path)
+        os.replace(tmp_path, output_path)
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
     print(f"  저장 완료: {output_path}")
 
     return output_path
@@ -477,12 +502,16 @@ def process_document(input_path, output_path=None):
 def process_all_documents():
     """04_workspace 하위의 draft DOCX를 일괄 처리"""
     workspace_dir = ROOTDIR / "04_workspace"
-    docx_files = sorted(workspace_dir.glob("*/report_draft.docx"))
+    docx_files = sorted(workspace_dir.glob("*/report_draft*.docx"))
 
     print(f"처리 대상: {len(docx_files)}파일")
 
     for input_path in docx_files:
-        output_path = input_path.with_name("report_designed.docx")
+        agent_tag = extract_agent_tag_from_filename(input_path.name)
+        if agent_tag:
+            output_path = input_path.with_name(f"report_designed_{agent_tag}.docx")
+        else:
+            output_path = input_path.with_name("report_designed.docx")
         try:
             process_document(str(input_path), str(output_path))
         except Exception as e:

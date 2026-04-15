@@ -40,9 +40,13 @@ CAPTION_PATTERNS = [
 
 
 def extract_target_id(docx_path: str) -> str:
-    """DOCX 파일명에서 분석대상 ID를 추출한다 (_designed 접미사 제거)"""
+    """DOCX 파일명에서 분석대상 ID를 추출한다 (_designed/_draft 및 agent tag 접미사 제거)"""
     name = Path(docx_path).stem  # 예: "seongsu-residential_KR" 또는 "seongsu-residential_KR_designed"
-    return re.sub(r'_designed$', '', name)
+    name = re.sub(r'_designed_(claude|codex)$', '', name)
+    name = re.sub(r'_draft_(claude|codex)$', '', name)
+    name = re.sub(r'_designed$', '', name)
+    name = re.sub(r'_draft$', '', name)
+    return name
 
 
 def resolve_image_paths(target_id: str) -> dict:

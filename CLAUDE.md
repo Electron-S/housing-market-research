@@ -58,13 +58,13 @@ housing-market-research/
 │   │   ├── 거시환경_금리정책.md
 │   │   ├── 권역별시장동향.md
 │   │   └── 분양시장동향.md
-│   └── [target_id]_KR/                 # 사업지별 작업공간
+│   └── [target_id]_[agent]_KR/         # 사업지별 작업공간
 │       ├── STEP1_output.md ~ STEP10_output.md
 │       ├── STEP11_[유형]_draft.md
-│       ├── STEP12_review_packet.md
-│       ├── STEP12_output.md
-│       ├── report_draft.docx
-│       ├── report_designed.docx
+│       ├── STEP12_review_packet_[agent].md
+│       ├── STEP12_output_[agent].md
+│       ├── report_draft_[agent].docx
+│       ├── report_designed_[agent].docx
 │       └── images/
 └── 05_output/                  # 레거시 DOCX 보관 경로
 ```
@@ -103,14 +103,14 @@ housing-market-research/
 
 ## File Conventions
 
-- 작업 폴더: `04_workspace/[target_id]_KR/`
+- 작업 폴더: `04_workspace/[target_id]_[agent]_KR/`
 - 중간 산출물: `STEP1_output.md` ~ `STEP10_output.md`
 - 집필 파일: `STEP11_[유형]_draft.md` (예: `STEP11_아파트보고서_draft.md`, `STEP11_보고서_draft.md`)
-- 이미지 폴더: `04_workspace/[target_id]_KR/images/`
-- 리뷰 패킷: `04_workspace/[target_id]_KR/STEP12_review_packet.md`
-- 리뷰 결과: `04_workspace/[target_id]_KR/STEP12_output.md`
-- DOCX 초안: `04_workspace/[target_id]_KR/report_draft.docx`
-- 최종 보고서: `04_workspace/[target_id]_KR/report_designed.docx`
+- 이미지 폴더: `04_workspace/[target_id]_[agent]_KR/images/`
+- 리뷰 패킷: `04_workspace/[target_id]_[agent]_KR/STEP12_review_packet_[agent].md`
+- 리뷰 결과: `04_workspace/[target_id]_[agent]_KR/STEP12_output_[agent].md`
+- DOCX 초안: `04_workspace/[target_id]_[agent]_KR/report_draft_[agent].docx`
+- 최종 보고서: `04_workspace/[target_id]_[agent]_KR/report_designed_[agent].docx`
 
 ## Common Commands
 
@@ -135,19 +135,19 @@ python 03_code/md_to_docx_converter.py seongsu-residential_KR \
 
 # 이미지 삽입 (STEP13)
 python 03_code/insert_images.py \
-  04_workspace/seongsu-residential_KR/report_draft.docx
+  04_workspace/seongsu-residential_codex_KR/report_draft_codex.docx
 
 # 디자인 개선 (STEP13)
-python 03_code/improve_docx_design.py 04_workspace/seongsu-residential_KR/report_draft.docx
+python 03_code/improve_docx_design.py 04_workspace/seongsu-residential_codex_KR/report_draft_codex.docx
 
 # 문자수 확인 (STEP13/14)
-python 03_code/count_docx_chars.py 04_workspace/seongsu-residential_KR/report_designed.docx
+python 03_code/count_docx_chars.py 04_workspace/seongsu-residential_codex_KR/report_designed_codex.docx
 
 # MD 파일 문자수 확인 (집필 중)
 python 03_code/count_chars.py 04_workspace/seongsu-residential_KR/STEP11_보고서_draft.md
 
 # DOCX 구조 분석
-python 03_code/analyze_docx.py 04_workspace/seongsu-residential_KR/report_designed.docx
+python 03_code/analyze_docx.py 04_workspace/seongsu-residential_codex_KR/report_designed_codex.docx
 
 # STEP12 리뷰 패킷 생성
 python 03_code/multi_model_evaluate.py seongsu-residential_KR --reviewer claude
@@ -167,7 +167,7 @@ python 03_code/multi_model_evaluate.py seongsu-residential_KR --reviewer claude
 - `_KR` 접미사 폴더 자동 탐색
 
 #### improve_docx_design.py
-- 폰트·표·여백 디자인 보정. 기본 출력은 `report_designed.docx`.
+- 폰트·표·여백 디자인 보정. 기본 출력은 `report_designed_[agent].docx`.
 
 #### count_docx_chars.py
 - DOCX 문자수 확인 (공백 포함). 한국어 기준 8,000~12,000자 검증용.
@@ -180,7 +180,7 @@ python 03_code/multi_model_evaluate.py seongsu-residential_KR --reviewer claude
 
 #### multi_model_evaluate.py
 - STEP12 리뷰 패킷 생성. 현재 에이전트가 직접 평가할 수 있도록 원문과 템플릿을 준비.
-- 기존 `STEP12_output.md`를 읽어 다음 Iteration 번호를 자동 증가.
+- 기존 `STEP12_output_[agent].md`를 읽어 다음 Iteration 번호를 자동 증가.
 
 ## Evaluation Criteria (STEP12)
 

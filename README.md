@@ -16,7 +16,7 @@
 
 1. [`02_plan/주택시장조사_마스터_워크플로우.md`](02_plan/주택시장조사_마스터_워크플로우.md)를 읽는다.
 2. 산출물 유형에 맞는 템플릿을 고른다.
-3. `04_workspace/[target_id]_KR/` 폴더를 만든다.
+3. `04_workspace/[target_id]_[agent]_KR/` 또는 `04_workspace/[target_id]_KR/` 폴더를 만든다.
 4. 각 STEP 절차서는 해당 STEP 착수 직전에만 읽는다.
 
 ## 디렉터리 구조
@@ -32,13 +32,13 @@ housing-market-research/
 ├── 03_code/                         # Python 유틸
 ├── 04_workspace/
 │   ├── 공통_KR/                     # 주택시장 공통 KB (STEP0 수행 후 생성)
-│   └── [target_id]_KR/             # 사업지별 작업공간
+│   └── [target_id]_[agent]_KR/     # 사업지별 작업공간 (예: _claude, _codex)
 │       ├── STEP1_output.md ~ STEP10_output.md
 │       ├── STEP11_[유형]_draft.md
-│       ├── STEP12_review_packet.md
-│       ├── STEP12_output.md
-│       ├── report_draft.docx
-│       ├── report_designed.docx
+│       ├── STEP12_review_packet_[agent].md
+│       ├── STEP12_output_[agent].md
+│       ├── report_draft_[agent].docx
+│       ├── report_designed_[agent].docx
 │       └── images/
 └── 05_output/                         # 레거시 최종 DOCX 보관 경로
 ```
@@ -60,9 +60,9 @@ housing-market-research/
 | 10 | 보고서 장구성 설계 | `STEP10_output.md` |
 | 11 | 보고서 집필 | `STEP11_[유형]_draft.md` |
 | 12 | 품질 리뷰 (MD) | 에이전트 직접 평가 → 미달 시 수정 반복 |
-| 13 | MD→DOCX 변환 | `report_draft.docx` |
+| 13 | MD→DOCX 변환 | `report_draft_[agent].docx` |
 | 14 | 품질 리뷰 (DOCX) | 서식·데이터·가독성 점검 |
-| 15 | 최종화 | `report_designed.docx` |
+| 15 | 최종화 | `report_designed_[agent].docx` |
 
 ## 환경 설정
 
@@ -84,9 +84,9 @@ GEMINI_API_KEY=...
 
 ```bash
 python3 -c "from docx import Document; print('python-docx OK')"
-python3 03_code/md_to_docx_converter.py seongsu-residential_KR
-python3 03_code/improve_docx_design.py 04_workspace/seongsu-residential_KR/report_draft.docx
-python3 03_code/count_docx_chars.py 04_workspace/seongsu-residential_KR/report_designed.docx
+python3 03_code/md_to_docx_converter.py seongsu-residential_codex_KR
+python3 03_code/improve_docx_design.py 04_workspace/seongsu-residential_codex_KR/report_draft_codex.docx
+python3 03_code/count_docx_chars.py 04_workspace/seongsu-residential_codex_KR/report_designed_codex.docx
 ```
 
 ## 주요 스크립트
@@ -103,18 +103,18 @@ python3 03_code/count_docx_chars.py 04_workspace/seongsu-residential_KR/report_d
 
 ```bash
 # 실행 예시
-python 03_code/md_to_docx_converter.py seongsu-residential_KR \
+python 03_code/md_to_docx_converter.py seongsu-residential_codex_KR \
   --title "성수 주거지역 시장조사 보고서"
 
-python 03_code/multi_model_evaluate.py seongsu-residential_KR --reviewer codex
+python 03_code/multi_model_evaluate.py seongsu-residential_codex_KR --reviewer codex
 ```
 
 기본 산출물 경로:
 
-- `04_workspace/[target_id]_KR/report_draft.docx`
-- `04_workspace/[target_id]_KR/report_designed.docx`
-- `04_workspace/[target_id]_KR/STEP12_review_packet.md`
-- `04_workspace/[target_id]_KR/STEP12_output.md`
+- `04_workspace/[target_id]_[agent]_KR/report_draft_[agent].docx`
+- `04_workspace/[target_id]_[agent]_KR/report_designed_[agent].docx`
+- `04_workspace/[target_id]_[agent]_KR/STEP12_review_packet_[agent].md`
+- `04_workspace/[target_id]_[agent]_KR/STEP12_output_[agent].md`
 
 ## 주요 데이터 소스
 

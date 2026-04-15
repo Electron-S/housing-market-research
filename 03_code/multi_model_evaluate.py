@@ -35,12 +35,26 @@ CRITERIA = [
     ("결론 실효성", "매수/보유/매도/개발/보류 등 행동 방향이 근거와 함께 명확히 제시됐는가"),
 ]
 
-REVIEW_PACKET_NAME = "STEP12_review_packet.md"
-STEP12_OUTPUT_NAME = "STEP12_output.md"
+KNOWN_AGENT_TAGS = {"claude", "codex"}
 
 
 def extract_bare_id(target_id: str) -> str:
     return re.sub(r"_KR$", "", target_id)
+
+
+def extract_agent_tag(target_id: str) -> str:
+    bare_id = extract_bare_id(target_id)
+    parts = bare_id.split("_")
+    if parts and parts[-1] in KNOWN_AGENT_TAGS:
+        return parts[-1]
+    return ""
+
+
+def build_step12_names(target_id: str) -> tuple[str, str]:
+    agent_tag = extract_agent_tag(target_id)
+    if agent_tag:
+        return f"STEP12_review_packet_{agent_tag}.md", f"STEP12_output_{agent_tag}.md"
+    return "STEP12_review_packet.md", "STEP12_output.md"
 
 
 def extract_docx_text(docx_path: Path) -> str:
@@ -62,7 +76,10 @@ def extract_docx_text(docx_path: Path) -> str:
 
 
 def find_report_text(target_id: str) -> tuple[str, Path]:
+    agent_tag = extract_agent_tag(target_id)
     docx_candidates = [
+        ROOTDIR / "04_workspace" / target_id / (f"report_designed_{agent_tag}.docx" if agent_tag else "report_designed.docx"),
+        ROOTDIR / "04_workspace" / target_id / (f"report_draft_{agent_tag}.docx" if agent_tag else "report_draft.docx"),
         ROOTDIR / "04_workspace" / target_id / "report_designed.docx",
         ROOTDIR / "04_workspace" / target_id / "report_draft.docx",
         ROOTDIR / "05_output" / f"{extract_bare_id(target_id)}_designed.docx",
@@ -225,7 +242,8 @@ def main():
     target_dir = ROOTDIR / "04_workspace" / args.target_id
     target_dir.mkdir(parents=True, exist_ok=True)
 
-    step12_output_path = target_dir / STEP12_OUTPUT_NAME
+    review_packet_name, step12_output_name = build_step12_names(args.target_id)
+    step12_output_path = target_dir / step12_output_name
     ensure_step12_output_file(step12_output_path)
 
     report_text, source_path = find_report_text(args.target_id)
@@ -242,7 +260,7 @@ def main():
         output_path=step12_output_path,
     )
 
-    packet_path = target_dir / REVIEW_PACKET_NAME
+    packet_path = target_dir / review_packet_name
     write_review_packet(packet_path, packet_content)
 
     print(f"=== STEP12 리뷰 패킷 생성: {args.target_id} ===")
