@@ -61,9 +61,12 @@ housing-market-research/
 │   └── [target_id]_KR/                 # 사업지별 작업공간
 │       ├── STEP1_output.md ~ STEP10_output.md
 │       ├── STEP11_[유형]_draft.md
+│       ├── STEP12_review_packet.md
+│       ├── STEP12_output.md
+│       ├── report_draft.docx
+│       ├── report_designed.docx
 │       └── images/
-└── 05_output/                  # 최종 DOCX
-    └── [target_id].docx
+└── 05_output/                  # 레거시 DOCX 보관 경로
 ```
 
 > `공통_KR/` 폴더는 STEP0 수행 후 생성된다. 아직 없으면 STEP0부터 시작한다.
@@ -84,7 +87,7 @@ housing-market-research/
 | 9 | 분양성 평가·리스크 정리 | 청약 흡수력·분양 속도·리스크 |
 | 10 | 보고서 장구성 설계 | 섹션 구성·표지 정보 확정 |
 | 11 | 보고서 집필 | `STEP11_[유형]_draft.md` |
-| 12 | 품질 리뷰·개선 루프 (MD) | 5기준 AI 평가 → A 미달 수정 → 반복 (최대 5회) |
+| 12 | 품질 리뷰·개선 루프 (MD) | 현재 에이전트가 직접 평가 → A 미달 수정 → 반복 |
 | 13 | MD→DOCX 변환 | 변환·이미지 삽입·디자인 보정 |
 | 14 | 품질 리뷰 (DOCX) | 서식·데이터·가독성 점검 |
 | 15 | 최종화 | 최종본 확정 및 기록 |
@@ -102,9 +105,12 @@ housing-market-research/
 
 - 작업 폴더: `04_workspace/[target_id]_KR/`
 - 중간 산출물: `STEP1_output.md` ~ `STEP10_output.md`
-- 집필 파일: `STEP11_[유형]_draft.md` (예: `STEP11_아파트보고서_draft.md`)
+- 집필 파일: `STEP11_[유형]_draft.md` (예: `STEP11_아파트보고서_draft.md`, `STEP11_보고서_draft.md`)
 - 이미지 폴더: `04_workspace/[target_id]_KR/images/`
-- 최종 보고서: `05_output/[target_id].docx`
+- 리뷰 패킷: `04_workspace/[target_id]_KR/STEP12_review_packet.md`
+- 리뷰 결과: `04_workspace/[target_id]_KR/STEP12_output.md`
+- DOCX 초안: `04_workspace/[target_id]_KR/report_draft.docx`
+- 최종 보고서: `04_workspace/[target_id]_KR/report_designed.docx`
 
 ## Common Commands
 
@@ -129,23 +135,22 @@ python 03_code/md_to_docx_converter.py seongsu-residential_KR \
 
 # 이미지 삽입 (STEP13)
 python 03_code/insert_images.py \
-  04_workspace/seongsu-residential_KR/STEP11_아파트보고서_draft.docx \
-  05_output/seongsu-residential.docx
+  04_workspace/seongsu-residential_KR/report_draft.docx
 
 # 디자인 개선 (STEP13)
-python 03_code/improve_docx_design.py 05_output/seongsu-residential.docx
+python 03_code/improve_docx_design.py 04_workspace/seongsu-residential_KR/report_draft.docx
 
 # 문자수 확인 (STEP13/14)
-python 03_code/count_docx_chars.py 05_output/seongsu-residential_designed.docx
+python 03_code/count_docx_chars.py 04_workspace/seongsu-residential_KR/report_designed.docx
 
 # MD 파일 문자수 확인 (집필 중)
-python 03_code/count_chars.py 04_workspace/seongsu-residential_KR/STEP11_아파트보고서_draft.md
+python 03_code/count_chars.py 04_workspace/seongsu-residential_KR/STEP11_보고서_draft.md
 
 # DOCX 구조 분석
-python 03_code/analyze_docx.py 05_output/seongsu-residential_designed.docx
+python 03_code/analyze_docx.py 04_workspace/seongsu-residential_KR/report_designed.docx
 
-# STEP12 멀티모델 AI 평가
-python 03_code/multi_model_evaluate.py seongsu-residential_KR
+# STEP12 리뷰 패킷 생성
+python 03_code/multi_model_evaluate.py seongsu-residential_KR --reviewer claude
 ```
 
 ## Code Architecture
@@ -162,7 +167,7 @@ python 03_code/multi_model_evaluate.py seongsu-residential_KR
 - `_KR` 접미사 폴더 자동 탐색
 
 #### improve_docx_design.py
-- 폰트·표·여백 디자인 보정. 출력에 `_designed` 접미사 붙음.
+- 폰트·표·여백 디자인 보정. 기본 출력은 `report_designed.docx`.
 
 #### count_docx_chars.py
 - DOCX 문자수 확인 (공백 포함). 한국어 기준 8,000~12,000자 검증용.
@@ -174,8 +179,8 @@ python 03_code/multi_model_evaluate.py seongsu-residential_KR
 - DOCX 구조 분석 (단락수, 표수, 스타일 사용 현황).
 
 #### multi_model_evaluate.py
-- STEP12 멀티모델 AI 평가. 5기준 A등급까지 반복 평가.
-- `.env` 파일에 `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` 필요.
+- STEP12 리뷰 패킷 생성. 현재 에이전트가 직접 평가할 수 있도록 원문과 템플릿을 준비.
+- 기존 `STEP12_output.md`를 읽어 다음 Iteration 번호를 자동 증가.
 
 ## Evaluation Criteria (STEP12)
 

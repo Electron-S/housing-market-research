@@ -30,6 +30,6 @@ Thumbs.db
 01_data/*.csv
 01_data/*.xls
 
-# Output (결과 파일은 추적하지 않음)
-04_workspace/**/*.docx
+# Workspace / Output (중간·결과 파일은 추적하지 않음)
+04_workspace/
 05_output/

@@ -52,8 +52,8 @@ STEP1~9의 내용을 독자가 읽기 쉬운 보고서 구조로 재편한다.
 python 03_code/md_to_docx_converter.py [target_id]_KR --title "[대상] 부동산 분석 보고서"
 
 # 디자인 보정
-python 03_code/improve_docx_design.py 05_output/[target_id].docx
+python 03_code/improve_docx_design.py 04_workspace/[target_id]_KR/report_draft.docx
 
-# AI 품질 평가
-python 03_code/multi_model_evaluate.py [target_id]_KR
+# STEP12 리뷰 패킷 생성
+python 03_code/multi_model_evaluate.py [target_id]_KR --reviewer codex
 ```

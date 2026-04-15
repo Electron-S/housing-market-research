@@ -39,8 +39,8 @@ COVER_PRESETS = {
         'code_label': '분석 대상',
         'unknown_name': '대상',
         'unknown_loc': '미상',
-        'input_filename': 'STEP10_보고서_draft.md',
-        'output_prefix': '보고서',
+        'input_filename': 'STEP11_보고서_draft.md',
+        'output_filename': 'report_draft.docx',
         'master_csv': 'property_master_kr.csv',
     },
 }
@@ -523,7 +523,7 @@ def main():
     target_dir = MIDDLE_OUTPUT_DIR / target_id
     input_name = args.input or preset['input_filename']
     md_file = target_dir / input_name
-    output_file = Path(args.output) if args.output else target_dir / f'{preset["output_prefix"]}_{target_id}_draft.docx'
+    output_file = Path(args.output) if args.output else target_dir / preset['output_filename']
 
     cover_override = {
         'title': args.title,

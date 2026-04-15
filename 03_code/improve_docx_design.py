@@ -16,6 +16,7 @@
 import os
 import sys
 import re
+from pathlib import Path
 from docx import Document
 from docx.shared import Pt, Inches, RGBColor, Cm, Twips
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
@@ -46,6 +47,8 @@ FONTS = {
     'body': '맑은고딕',
     'title': '맑은고딕',
 }
+
+ROOTDIR = Path(__file__).resolve().parent.parent
 
 # ========================================
 # 헬퍼 함수
@@ -115,25 +118,32 @@ def add_total_pages(run):
     run._r.append(fldChar2)
     run._r.append(fldChar3)
 
-def extract_company_code(filepath):
-    """파일 경로에서 기업코드를 추출"""
-    filename = os.path.basename(filepath)
-    match = re.search(r'(\d{5,6})', filename)
-    return match.group(1) if match else "XXXXXX"
+def extract_target_id(filepath):
+    """입력 파일 경로에서 분석대상 ID를 추출"""
+    path = Path(filepath)
+    if path.parent.name:
+        return path.parent.name
+
+    filename = path.stem
+    for suffix in ('_designed', '_draft'):
+        if filename.endswith(suffix):
+            filename = filename[:-len(suffix)]
+    return filename
+
+
+def build_header_label(target_id):
+    """헤더에 표시할 분석대상 식별자를 생성"""
+    target_id = (target_id or "").strip()
+    return target_id or "unknown-target"
 
 def extract_company_name(doc):
-    """문서에서 기업명을 추출"""
+    """문서에서 표지의 대상명을 추출"""
     for para in doc.paragraphs[:20]:
         text = para.text.strip()
-        # '경영과제 해결 제안서' 앞에 있는 기업명을 탐색
-        marker = '경영과제 해결 제안서'
-        if marker in text:
-            idx = text.find(marker)
-            if idx > 0:
-                return text[:idx].strip()
-        # 표지의 기업명 패턴
-        if '주식회사' in text:
-            return text.strip()
+        if text.startswith('분석 대상:'):
+            return text.split(':', 1)[1].strip()
+        if text and text not in {'부동산 분석 보고서'} and '작성자:' not in text:
+            return text
     return ""
 
 # ========================================
@@ -239,7 +249,7 @@ def improve_tables(doc):
         except Exception as e:
             print(f"    표{table_idx+1}의 스타일 설정 오류: {e}")
 
-def add_header_footer(doc, company_code, company_name=""):
+def add_header_footer(doc, target_id, company_name=""):
     """헤더와 푸터를 추가"""
     print("  머리글/바닥글 추가 중...")
 
@@ -261,7 +271,7 @@ def add_header_footer(doc, company_code, company_name=""):
         header_para = header.paragraphs[0] if header.paragraphs else header.add_paragraph()
         header_para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
 
-        header_text = f"경영과제 해결 제안서 | 기업코드: {company_code}"
+        header_text = f"부동산 분석 보고서 | 분석대상: {target_id}"
         run = header_para.add_run(header_text)
         run.font.name = FONTS['heading']
         run.font.size = Pt(8)
@@ -325,7 +335,7 @@ def _add_left_border(paragraph, color_hex='003366', width_pt=4, space_pt=10):
     pPr.append(pBdr)
 
 
-def improve_cover_page(doc, company_code):
+def improve_cover_page(doc, target_id):
     """표지 디자인을 개선(안C: 좌측 정렬 비즈니스 리포트 스타일)"""
     print("  표지 디자인 개선 중...")
 
@@ -347,8 +357,8 @@ def improve_cover_page(doc, company_code):
 
         para.alignment = WD_ALIGN_PARAGRAPH.LEFT
 
-        # 메인 타이틀 '경영과제 해결 제안서'
-        if '경영과제 해결 제안서' in text:
+        # 메인 타이틀
+        if '부동산 분석 보고서' in text:
             for run in para.runs:
                 run.font.name = FONTS['title']
                 run.font.size = Pt(28)
@@ -358,8 +368,8 @@ def improve_cover_page(doc, company_code):
             para.paragraph_format.space_after = Pt(4)
             title_indices.append(i)
 
-        # 기업명
-        elif '주식회사' in text:
+        # 분석 대상명
+        elif text.startswith('분석 대상:'):
             for run in para.runs:
                 run.font.name = FONTS['title']
                 run.font.size = Pt(16)
@@ -368,16 +378,16 @@ def improve_cover_page(doc, company_code):
                 run._element.rPr.rFonts.set(qn('w:eastAsia'), FONTS['title'])
             para.paragraph_format.space_after = Pt(2)
 
-        # 기업코드
-        elif '기업코드' in text:
+        # 분석대상 ID
+        elif target_id and target_id in text:
             for run in para.runs:
                 run.font.name = FONTS['body']
                 run.font.size = Pt(11)
                 run.font.color.rgb = COLORS['secondary']
                 run._element.rPr.rFonts.set(qn('w:eastAsia'), FONTS['body'])
 
-        # 제안자·날짜(하단 메타 정보)
-        elif '제안자' in text or ('년' in text and len(text) < 20):
+        # 작성자·날짜(하단 메타 정보)
+        elif '작성자' in text or ('년' in text and len(text) < 20):
             for run in para.runs:
                 run.font.name = FONTS['body']
                 run.font.size = Pt(10)
@@ -435,24 +445,28 @@ def process_document(input_path, output_path=None):
     print(f"\n처리 중: {input_path}")
 
     if output_path is None:
-        base, ext = os.path.splitext(input_path)
-        output_path = f"{base}_designed{ext}"
+        input_file = Path(input_path)
+        if input_file.name == "report_draft.docx":
+            output_path = str(input_file.with_name("report_designed.docx"))
+        else:
+            base, ext = os.path.splitext(input_path)
+            output_path = f"{base}_designed{ext}"
 
     # 문서를 읽어들임
     doc = Document(input_path)
 
-    # 기업코드를 추출
-    company_code = extract_company_code(input_path)
+    # 분석대상 ID/이름 추출
+    target_id = build_header_label(extract_target_id(input_path))
     company_name = extract_company_name(doc)
-    print(f"  기업코드: {company_code}")
-    print(f"  기업명: {company_name if company_name else '(검출 실패)'}")
+    print(f"  분석대상 ID: {target_id}")
+    print(f"  분석대상명: {company_name if company_name else '(검출 실패)'}")
 
     # 디자인 개선을 적용
     improve_heading_styles(doc)
     improve_tables(doc)
-    improve_cover_page(doc, company_code)
+    improve_cover_page(doc, target_id)
     improve_paragraphs(doc)
-    add_header_footer(doc, company_code, company_name)
+    add_header_footer(doc, target_id, company_name)
 
     # 저장
     doc.save(output_path)
@@ -461,27 +475,20 @@ def process_document(input_path, output_path=None):
     return output_path
 
 def process_all_documents():
-    """05_output의 전체 파일을 처리"""
-    input_dir = r"c:\Users\gaebalai\KCS-AI\05_output"
-    output_dir = r"c:\Users\gaebalai\KCS-AI\05_output_designed"
-
-    # 출력 디렉토리를 생성
-    os.makedirs(output_dir, exist_ok=True)
-
-    # 대상 파일을 가져옴
-    docx_files = [f for f in os.listdir(input_dir) if f.endswith('.docx') and not f.startswith('~')]
+    """04_workspace 하위의 draft DOCX를 일괄 처리"""
+    workspace_dir = ROOTDIR / "04_workspace"
+    docx_files = sorted(workspace_dir.glob("*/report_draft.docx"))
 
     print(f"처리 대상: {len(docx_files)}파일")
 
-    for filename in docx_files:
-        input_path = os.path.join(input_dir, filename)
-        output_path = os.path.join(output_dir, filename)
+    for input_path in docx_files:
+        output_path = input_path.with_name("report_designed.docx")
         try:
-            process_document(input_path, output_path)
+            process_document(str(input_path), str(output_path))
         except Exception as e:
-            print(f"  오류: {e}")
+            print(f"  오류 ({input_path}): {e}")
 
-    print(f"\n완료! 출력 경로: {output_dir}")
+    print(f"\n완료! 출력 경로: {workspace_dir}")
 
 # ========================================
 # 메인

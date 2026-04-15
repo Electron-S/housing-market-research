@@ -6,7 +6,7 @@
 - 종료코드: 0=OK, 1=범위 밖, 2=파일오류
 
 사용 예:
-    python 03_code/count_docx_chars.py 05_output/035890_designed.docx
+    python 03_code/count_docx_chars.py 04_workspace/seongsu-residential_KR/report_designed.docx
     python 03_code/count_docx_chars.py path.docx --lang ko
     python 03_code/count_docx_chars.py path.docx --min 9000 --max 13000
 """
@@ -53,7 +53,7 @@ def infer_lang(path: Path, cli_lang):
         return cli_lang
     parts = path.resolve().parts
     name = str(path)
-    if '_KR' in name or any('05_output' in p or p.endswith('_KR') for p in parts):
+    if '_KR' in name or any('04_workspace' in p or '05_output' in p or p.endswith('_KR') for p in parts):
         return 'ko'
     return 'ko'
 

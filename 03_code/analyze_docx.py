@@ -2,7 +2,7 @@
 DOCX 제안서 구조 분석 스크립트
 
 사용 예:
-    python 03_code/analyze_docx.py 05_output/035890_designed.docx
+    python 03_code/analyze_docx.py 04_workspace/seongsu-residential_KR/report_designed.docx
 """
 import os
 import sys
@@ -68,7 +68,7 @@ def analyze_document(doc_path):
 
 
 if __name__ == "__main__":
-    doc_path = sys.argv[1] if len(sys.argv) > 1 else "05_output/035890_designed.docx"
+    doc_path = sys.argv[1] if len(sys.argv) > 1 else "04_workspace/seongsu-residential_KR/report_designed.docx"
 
     if os.path.exists(doc_path):
         analyze_document(doc_path)

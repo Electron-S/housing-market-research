@@ -35,8 +35,12 @@ housing-market-research/
 │   └── [target_id]_KR/             # 사업지별 작업공간
 │       ├── STEP1_output.md ~ STEP10_output.md
 │       ├── STEP11_[유형]_draft.md
+│       ├── STEP12_review_packet.md
+│       ├── STEP12_output.md
+│       ├── report_draft.docx
+│       ├── report_designed.docx
 │       └── images/
-└── 05_output/              # 최종 DOCX
+└── 05_output/                         # 레거시 최종 DOCX 보관 경로
 ```
 
 ## 15단계 워크플로우
@@ -55,10 +59,10 @@ housing-market-research/
 | 9 | 분양성 평가·리스크 | `STEP9_output.md` |
 | 10 | 보고서 장구성 설계 | `STEP10_output.md` |
 | 11 | 보고서 집필 | `STEP11_[유형]_draft.md` |
-| 12 | 품질 리뷰 (MD) | 5기준 A/B/C 평가 → 미달 시 수정 반복 |
-| 13 | MD→DOCX 변환 | `[target_id]_draft.docx` |
+| 12 | 품질 리뷰 (MD) | 에이전트 직접 평가 → 미달 시 수정 반복 |
+| 13 | MD→DOCX 변환 | `report_draft.docx` |
 | 14 | 품질 리뷰 (DOCX) | 서식·데이터·가독성 점검 |
-| 15 | 최종화 | `[target_id]_designed.docx` |
+| 15 | 최종화 | `report_designed.docx` |
 
 ## 환경 설정
 
@@ -68,12 +72,21 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-API 키는 `.env` 파일에 작성한다 (`.env.example` 참고):
+외부 API를 직접 호출하는 확장 스크립트를 쓸 때만 `.env` 파일을 사용한다 (`.env.example` 참고):
 
 ```
 ANTHROPIC_API_KEY=...
 OPENAI_API_KEY=...
 GEMINI_API_KEY=...
+```
+
+설치 후 빠른 검증:
+
+```bash
+python3 -c "from docx import Document; print('python-docx OK')"
+python3 03_code/md_to_docx_converter.py seongsu-residential_KR
+python3 03_code/improve_docx_design.py 04_workspace/seongsu-residential_KR/report_draft.docx
+python3 03_code/count_docx_chars.py 04_workspace/seongsu-residential_KR/report_designed.docx
 ```
 
 ## 주요 스크립트
@@ -86,15 +99,22 @@ GEMINI_API_KEY=...
 | `count_docx_chars.py` | DOCX 문자수 확인 | 13, 14 |
 | `count_chars.py` | Markdown 문자수 확인 | 11, 12 |
 | `analyze_docx.py` | DOCX 구조 분석 | 14 |
-| `multi_model_evaluate.py` | AI 멀티모델 품질 평가 | 12 |
+| `multi_model_evaluate.py` | STEP12 리뷰 패킷 생성 및 반복 리뷰 준비 | 12 |
 
 ```bash
 # 실행 예시
 python 03_code/md_to_docx_converter.py seongsu-residential_KR \
   --title "성수 주거지역 시장조사 보고서"
 
-python 03_code/multi_model_evaluate.py seongsu-residential_KR
+python 03_code/multi_model_evaluate.py seongsu-residential_KR --reviewer codex
 ```
+
+기본 산출물 경로:
+
+- `04_workspace/[target_id]_KR/report_draft.docx`
+- `04_workspace/[target_id]_KR/report_designed.docx`
+- `04_workspace/[target_id]_KR/STEP12_review_packet.md`
+- `04_workspace/[target_id]_KR/STEP12_output.md`
 
 ## 주요 데이터 소스
 

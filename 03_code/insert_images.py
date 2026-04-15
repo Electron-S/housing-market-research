@@ -1,8 +1,8 @@
 """mermaid로 생성한 이미지를 DOCX 부동산 분석 보고서에 삽입한다.
 
 Usage:
-    python insert_images.py 05_output/seongsu-residential_KR.docx
-    python insert_images.py 05_output/seongsu-residential_KR.docx 05_output/seongsu-residential_KR_out.docx
+    python insert_images.py 04_workspace/seongsu-residential_KR/report_draft.docx
+    python insert_images.py 04_workspace/seongsu-residential_KR/report_draft.docx 04_workspace/seongsu-residential_KR/report_with_images.docx
 
 분석대상 ID는 DOCX 파일명(stem)에서 자동 검출한다.
 이미지는 04_workspace/<분석대상 ID>/images/ 하위의 causal.png, kpi_tree.png를 사용.
@@ -133,7 +133,7 @@ def insert_images(docx_path, output_path, image_paths):
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python insert_images.py <docx_path> [output_path]")
-        print("Example: python insert_images.py 05_output/184226.docx")
+        print("Example: python insert_images.py 04_workspace/seongsu-residential_KR/report_draft.docx")
         sys.exit(1)
 
     docx_in = sys.argv[1]
