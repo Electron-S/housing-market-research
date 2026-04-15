@@ -71,7 +71,7 @@ STEP7의 비교단지 실거래가와 차등지수를 활용해 평형별 적정
 ```
 
 ## 산출물
-`04_workspace/[target_id]_KR/STEP9_output.md`
+`04_workspace/[target_id]_[agent]_KR/STEP9_output.md`
 
 ### 포맷 (일반)
 ```markdown
@@ -111,6 +111,6 @@ STEP7의 비교단지 실거래가와 차등지수를 활용해 평형별 적정
 ```
 
 ## 다음 STEP 인계
-- 결론 문장 → STEP10 보고서의 Executive Summary 및 결론 섹션에 그대로 인용
+- 결론 문장 → STEP11 보고서 초안의 Executive Summary 및 결론 섹션에 그대로 인용
 - 행동 방향·조건 → 보고서 서두 배치 (두괄식 구성)
-- 상가인 경우 `층별 적정 평단가 밴드 표`와 `산정 가정`을 STEP10 보고서 본문에 그대로 승계
+- 상가인 경우 `층별 적정 평단가 밴드 표`와 `산정 가정`을 STEP11 보고서 초안 본문에 그대로 승계

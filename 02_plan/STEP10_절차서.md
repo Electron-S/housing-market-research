@@ -28,14 +28,16 @@ STEP1~9의 내용을 독자가 읽기 쉬운 보고서 구조로 재편한다.
 ## 파일명 규칙
 | 산출물 유형 | 파일명 |
 |---|---|
-| 권역 시장 브리프 | `STEP10_권역브리프_draft.md` |
-| 사업지 입지 분석 | `STEP10_사업지분석_draft.md` |
-| 경쟁 단지 비교 | `STEP10_경쟁비교_draft.md` |
+| 아파트 시장조사 보고서 | `STEP11_아파트보고서_draft.md` |
+| 상가 시장조사 보고서 | `STEP11_상가보고서_draft.md` |
+| 권역 시장 브리프 | `STEP11_권역브리프_draft.md` |
+| 사업지 입지 분석 | `STEP11_사업지분석_draft.md` |
+| 경쟁 단지 비교 | `STEP11_경쟁비교_draft.md` |
 
 ## 산출물
-`04_workspace/[target_id]_KR/STEP10_[유형]_draft.md`
+`04_workspace/[target_id]_[agent]_KR/STEP11_[유형]_draft.md`
 
-### 기본 보고서 구조
+### 기본 보고서 구조 (`STEP11_[유형]_draft.md`)
 ```markdown
 # [대상] 부동산 분석 보고서
 
@@ -53,13 +55,13 @@ STEP1~9의 내용을 독자가 읽기 쉬운 보고서 구조로 재편한다.
 ## 이후 변환 절차
 ```bash
 # DOCX 변환
-python 03_code/md_to_docx_converter.py [target_id]_KR --title "[대상] 부동산 분석 보고서"
+python 03_code/md_to_docx_converter.py [target_id]_[agent]_KR --title "[대상] 부동산 분석 보고서"
 
 # 디자인 보정
-python 03_code/improve_docx_design.py 04_workspace/[target_id]_KR/report_draft.docx
+python 03_code/improve_docx_design.py 04_workspace/[target_id]_[agent]_KR/report_draft_[agent].docx
 
 # STEP12 리뷰 패킷 생성
-python 03_code/multi_model_evaluate.py [target_id]_KR --reviewer codex
+python 03_code/multi_model_evaluate.py [target_id]_[agent]_KR --reviewer codex
 ```
 
 > 최종 DOCX는 디자인 보정 이후 `05_output/`에 저장한다.

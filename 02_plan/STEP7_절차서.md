@@ -41,7 +41,7 @@
 > 59㎡ 기준으로 적정가를 먼저 산정한 후 대형평형은 별도 보정 지수를 적용한다.
 
 ## 산출물
-`04_workspace/[target_id]_KR/STEP7_output.md`
+`04_workspace/[target_id]_[agent]_KR/STEP7_output.md`
 
 ### 포맷
 ```markdown

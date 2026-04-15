@@ -20,7 +20,7 @@
 - [ ] 각 리스크를 낮음·중간·높음으로 등급화
 
 ## 산출물
-`04_workspace/[target_id]_KR/STEP8_output.md`
+`04_workspace/[target_id]_[agent]_KR/STEP8_output.md`
 
 ### 포맷
 ```markdown
