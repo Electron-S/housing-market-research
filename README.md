@@ -48,7 +48,7 @@ python3 -m venv .venv
 | 14 | 품질 리뷰 (DOCX) | `STEP14_output.md` |
 | 15 | 최종화 | `05_output/[target_id]_designed.docx` |
 
-**STEP12 품질 리뷰 원칙**: 실행 중인 에이전트(Codex 또는 Claude)가 보고서를 직접 5개 기준으로 평가하고 최대 3회 반복한다. 에이전트별 결과는 별도 파일로 누적돼 추후 품질 비교에 활용된다.
+**STEP12 품질 리뷰 원칙**: 실행 중인 에이전트(Claude 또는 Codex)가 보고서를 직접 5개 기준으로 평가하고 최대 3회 반복한다. 에이전트별 결과는 별도 파일로 누적돼 추후 품질 비교에 활용된다.
 
 ## 디렉터리 구조
 
@@ -107,7 +107,7 @@ housing-market-research/
 ### STEP12 품질 리뷰 실행
 
 ```bash
-# 폴더명에 에이전트 태그(_codex_KR / _claude_KR)가 있으면 자동 감지
+# 폴더명에 에이전트 태그(_claude_KR / _codex_KR)가 있으면 자동 감지
 .venv/bin/python 03_code/multi_model_evaluate.py [target_id]_[agent]_KR
 
 # 태그가 없을 경우 명시

@@ -38,6 +38,7 @@ This file is the operating guide for Claude Code in this repository.
 - 리뷰 패킷은 `STEP12_review_packet_[agent].md`, 리뷰 결과는 `STEP12_output_[agent].md`를 사용한다.
 - DOCX 초안은 `report_draft_[agent].docx`를 작업 폴더에 저장한다.
 - 최종 DOCX는 `05_output/`에 저장하고, 파일명은 기본적으로 `report_designed_[agent].docx` 또는 대상 ID 기반 최종본으로 관리한다.
+- `[agent]` 자리는 현재 실행 에이전트 이름을 사용한다. Claude Code에서 작업하면 `claude`, Codex에서 작업하면 `codex`를 사용한다.
 
 ## Analysis Rules
 

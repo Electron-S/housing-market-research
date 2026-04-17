@@ -25,8 +25,8 @@ STEP11에서 작성한 보고서 초안(Markdown)을 **실행 중인 에이전�
 ```bash
 .venv/bin/python 03_code/multi_model_evaluate.py [target_id]_[agent]_KR --reviewer [에이전트명]
 # 예시
-.venv/bin/python 03_code/multi_model_evaluate.py hanam-regenheim_codex_KR --reviewer codex
 .venv/bin/python 03_code/multi_model_evaluate.py hanam-regenheim_claude_KR --reviewer claude
+.venv/bin/python 03_code/multi_model_evaluate.py hanam-regenheim_codex_KR --reviewer codex
 ```
 
 생성 파일:

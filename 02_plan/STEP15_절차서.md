@@ -19,7 +19,7 @@ ls 05_output/
 ```
 
 - 파일명 기본: `[target_id]_designed.docx`
-- 예시: `hanam-regenheim_codex_KR_designed.docx`
+- 예시: `hanam-regenheim_claude_KR_designed.docx`
 
 파일이 없으면 수동 복사:
 ```bash
@@ -64,6 +64,6 @@ cp 05_output/[target_id]_designed.docx /mnt/d/[파일명].docx
 - 최종 파일: `05_output/[target_id]_designed.docx`
 - 문자수: [N]자
 - STEP12 Iteration 수: [N]회
-- 에이전트: [codex / claude]
+- 에이전트: [claude / codex]
 - 특이사항: (있을 경우 기록)
 ```
