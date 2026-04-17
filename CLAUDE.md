@@ -19,12 +19,15 @@ This file is the operating guide for Claude Code in this repository.
 4. 필요한 STEP에 들어가기 직전에 해당 `02_plan/STEPx_절차서.md`만 읽는다.
 5. **STEP0은 모든 보고서 작성 전 필수 선행 단계다.** `STEP0_output.md`가 없으면 STEP0(사업 현황 사전 조사)부터 시작한다.
 6. 사용자가 `STEP1부터 진행해`처럼 지시해도, `STEP0_output.md`가 없으면 STEP0부터 시작한다. STEP0 결과가 있으면 STEP1부터 진행해도 된다.
+7. **전체 워크플로우는 STEP0~STEP15 (16단계)다.** STEP11(집필) → STEP12(MD 품질 리뷰) → STEP13(DOCX 변환) → STEP14(DOCX 품질 리뷰) → STEP15(최종화) 순서를 반드시 지킨다.
 
 금지:
 
-- STEP1~STEP10 절차서를 한 번에 미리 읽기
+- 절차서를 한 번에 미리 읽기
 - 출처와 기준 시점 없이 수치 단정하기
 - 근거 없이 분양가나 분양성 결론 내리기
+- **STEP12 품질 리뷰를 건너뛰고 DOCX 변환으로 넘어가기**
+- **STEP14 DOCX 품질 리뷰를 건너뛰고 최종화하기**
 
 ## Output Rules
 
@@ -74,16 +77,26 @@ STEP12에서는 아래 5개 기준으로 A/B/C 평가한다.
 
 `03_code/` 스크립트 사용 시 아래를 기억한다.
 
-- `md_to_docx_converter.py`: `_KR` 접미사 기준으로 한국어 설정을 자동 적용한다.
-- `insert_images.py`: 한국어 이미지 플레이스홀더를 감지해 삽입한다.
-- `improve_docx_design.py`: 디자인 보정 후 작업 폴더에 `report_designed_[agent].docx`를 만들고, 최종본을 `05_output/`에도 배치한다.
-- `count_docx_chars.py`: DOCX 문자수를 검증한다.
-- `count_chars.py`: Markdown 초안 문자수를 검증한다.
-- `analyze_docx.py`: DOCX 구조를 분석한다.
-- `multi_model_evaluate.py`: STEP12 리뷰 패킷과 반복 리뷰 준비를 돕는다.
+- `multi_model_evaluate.py`: **STEP12** 리뷰 패킷 생성 + Iteration 누적. `--reviewer [에이전트명]` 필수. Codex 실행 시 `--reviewer codex`, Claude 실행 시 `--reviewer claude`.
+- `md_to_docx_converter.py`: **STEP13** MD→DOCX 변환. `_KR` 접미사 기준 한국어 설정 자동 적용.
+- `improve_docx_design.py`: **STEP13** 디자인 보정. 작업 폴더에 `report_designed_[agent].docx` 생성 + `05_output/`에도 배치.
+- `count_docx_chars.py`: **STEP13·STEP14** DOCX 문자수 검증. 목표 8,000~12,000자.
+- `count_chars.py`: **STEP11** Markdown 초안 문자수 예비 검증.
+- `insert_images.py`: 이미지 플레이스홀더 감지 후 삽입.
+- `analyze_docx.py`: DOCX 구조 분석.
 
 ## Execution Notes
 
-- Python 스크립트는 가상환경 활성화 후 실행한다.
+- Python 스크립트는 반드시 프로젝트 루트의 `.venv`를 사용해 실행한다.
+- `.venv`가 없으면 먼저 `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`로 생성한다.
+- 모든 스크립트 실행은 `source .venv/bin/activate` 없이 `.venv/bin/python` 으로 직접 호출한다.
+
+  ```bash
+  # DOCX 변환 표준 실행 순서 (매번 이 순서로 실행)
+  .venv/bin/python 03_code/md_to_docx_converter.py [target_id] --input [STEP11 파일명]
+  .venv/bin/python 03_code/improve_docx_design.py [input.docx] [output.docx]
+  .venv/bin/python 03_code/count_docx_chars.py [output.docx]
+  ```
+
 - 명령 예시와 프로젝트 전반 설명은 [`README.md`](README.md)를 참조한다.
 - 프로젝트 배경 설명이 더 필요하면 [`00_ref/부동산_분석_프로젝트_개요.md`](00_ref/부동산_분석_프로젝트_개요.md), [`00_ref/부동산_분석_프로젝트_전략.md`](00_ref/부동산_분석_프로젝트_전략.md)를 읽는다.

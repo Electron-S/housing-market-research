@@ -55,17 +55,6 @@ STEP1~9의 내용을 독자가 읽기 쉬운 보고서 구조로 재편한다.
 ## 8. 결론 및 시사점
 ```
 
-## 이후 변환 절차
-```bash
-# DOCX 변환
-python 03_code/md_to_docx_converter.py [target_id]_[agent]_KR --title "[대상] 부동산 분석 보고서"
+## 다음 단계
 
-# 디자인 보정
-python 03_code/improve_docx_design.py 04_workspace/[target_id]_[agent]_KR/report_draft_[agent].docx
-
-# STEP12 리뷰 패킷 생성
-python 03_code/multi_model_evaluate.py [target_id]_[agent]_KR --reviewer codex
-```
-
-> 최종 DOCX는 디자인 보정 이후 `05_output/`에 저장한다.
-> 스크립트는 가상환경에서 실행하고, `STEP11_보고서_draft.md`가 없더라도 `STEP11_*_draft.md`를 자동 탐색한다.
+STEP10_output.md 완성 후 → **STEP11 보고서 집필** 진행
