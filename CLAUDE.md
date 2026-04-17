@@ -17,8 +17,7 @@ This file is the operating guide for Claude Code in this repository.
 3. 아파트 시장조사면 [`02_plan/아파트시장조사_워크플로우.md`](02_plan/아파트시장조사_워크플로우.md), 상가 시장조사면 [`02_plan/상가시장조사_워크플로우.md`](02_plan/상가시장조사_워크플로우.md)를 읽는다.
 4. 필요한 STEP에 들어가기 직전에 해당 `02_plan/STEPx_절차서.md`만 읽는다.
 5. **STEP0은 모든 보고서 작성 전 필수 선행 단계다.** `STEP0_output.md`가 없으면 STEP0(사업 현황 사전 조사)부터 시작한다.
-6. 사용자가 `STEP1부터 진행해`처럼 지시해도, `STEP0_output.md`가 없으면 STEP0부터 시작한다. STEP0 결과가 있으면 STEP1부터 진행해도 된다.
-7. **전체 워크플로우는 STEP0~STEP15 (16단계)다.** STEP11(집필) → STEP12(MD 품질 리뷰) → STEP13(DOCX 변환) → STEP14(DOCX 품질 리뷰) → STEP15(최종화) 순서를 반드시 지킨다.
+6. **전체 워크플로우는 STEP0~STEP15 (16단계)다.** STEP11(집필) → STEP12(MD 품질 리뷰) → STEP13(DOCX 변환) → STEP14(DOCX 품질 리뷰) → STEP15(최종화) 순서를 반드시 지킨다.
 
 금지:
 
