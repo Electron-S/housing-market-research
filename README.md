@@ -8,11 +8,11 @@ STEP0~STEP15의 16단계 분석·집필 파이프라인으로 운영한다.
 
 | 유형 | 설명 |
 |---|---|
-| 아파트 시장조사 보고서 | 재개발·재건축 사업지 적정분양가 검토 |
-| 상가 시장조사 보고서 | 근린생활시설 적정분양가 검토 |
-| 권역 시장 브리프 | 권역별 가격·거래·청약 동향 요약 |
-| 사업지 입지 분석 | 교통·학군·인프라·개발계획 분석 |
-| 경쟁 단지 비교 | 비교 단지 선정·가격·분양률 비교 |
+| **아파트 시장조사 보고서** | 재개발·재건축 사업지 사업성 검토 및 적정분양가 산정 (주력) |
+| **상가 시장조사 보고서** | 근린생활시설 사업성 검토 및 층별 적정분양가 산정 (주력) |
+| 권역 시장 브리프 | 권역별 가격·거래·청약 동향 요약 (보조) |
+| 사업지 입지 분석 | 교통·학군·인프라·개발계획 분석 (보조) |
+| 경쟁 단지 비교 | 비교 단지 선정·가격·분양률 비교 (보조) |
 
 ## 빠른 시작
 
@@ -107,11 +107,11 @@ housing-market-research/
 ### STEP12 품질 리뷰 실행
 
 ```bash
-# Codex에서 실행 시
-.venv/bin/python 03_code/multi_model_evaluate.py [target_id]_codex_KR --reviewer codex
+# 폴더명에 에이전트 태그(_codex_KR / _claude_KR)가 있으면 자동 감지
+.venv/bin/python 03_code/multi_model_evaluate.py [target_id]_[agent]_KR
 
-# Claude에서 실행 시
-.venv/bin/python 03_code/multi_model_evaluate.py [target_id]_claude_KR --reviewer claude
+# 태그가 없을 경우 명시
+.venv/bin/python 03_code/multi_model_evaluate.py [target_id]_KR --reviewer claude
 ```
 
 ## 상가 시장조사 추가 원칙
