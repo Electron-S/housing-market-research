@@ -4,7 +4,6 @@ This file is the operating guide for Claude Code in this repository.
 
 ## What Claude Should Do
 
-- 사람용 개요나 실행 예시가 필요하면 [`README.md`](README.md)를 본다.
 - 실제 작업 절차의 정본은 [`02_plan/주택시장조사_마스터_워크플로우.md`](02_plan/주택시장조사_마스터_워크플로우.md)다.
 - Claude는 이 문서를 "행동 규칙"으로 사용하고, 프로젝트 설명은 반복하지 않는다.
 - 기본 보고서 유형은 `아파트 시장조사 보고서`와 `상가 시장조사 보고서` 두 가지다.
