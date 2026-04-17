@@ -240,9 +240,13 @@ def write_review_packet(packet_path: Path, content: str):
 def main():
     parser = argparse.ArgumentParser(description="STEP12: 에이전트 기반 품질 리뷰 패킷 생성")
     parser.add_argument("target_id", help="분석대상 ID (예: seongsu-residential_KR)")
-    parser.add_argument("--reviewer", default="codex", help="리뷰 수행 에이전트 이름 (예: codex, claude)")
+    parser.add_argument("--reviewer", default=None, help="리뷰 수행 에이전트 이름 (예: codex, claude). 미지정 시 폴더명에서 자동 감지")
     parser.add_argument("--iteration", type=int, help="강제 iteration 번호 (기본: STEP12_output.md 기준 자동 증가)")
     args = parser.parse_args()
+
+    # --reviewer 미지정 시 target_id 폴더명에서 에이전트 태그 자동 감지
+    if args.reviewer is None:
+        args.reviewer = extract_agent_tag(args.target_id) or "unknown"
 
     target_dir = ROOTDIR / "04_workspace" / args.target_id
     target_dir.mkdir(parents=True, exist_ok=True)
