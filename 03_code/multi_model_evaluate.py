@@ -26,29 +26,22 @@ from pathlib import Path
 
 from docx import Document
 
-ROOTDIR = Path(__file__).resolve().parent.parent
+from _common import (
+    EXIT_ERROR,
+    ROOTDIR,
+    configure_stdout,
+    extract_agent_tag,
+    safe_print,
+)
 
+# 5개 평가 항목 (유형별 세부 기준의 정본은 02_plan/STEP12_절차서.md)
 CRITERIA = [
-    ("데이터 신뢰성", "모든 주요 수치에 출처(국토부, KB, R-ONE 등)와 기준 시점이 명시됐는가"),
+    ("데이터 신뢰성", "주요 수치에 출처(국토부·KB·R-ONE 등)와 기준 시점이 명시됐는가"),
     ("시장 해석", "가격 흐름과 수요·공급 변화가 인과관계로 설명됐는가"),
-    ("입지 분석", "교통·학군·업무 접근성이 실수요층과 구체적으로 연결됐는가"),
-    ("리스크 반영", "대출 규제·입주 물량·금리 변화 등 하방 리스크가 구조화됐는가"),
-    ("결론 실효성", "매수/보유/매도/개발/보류 등 행동 방향이 근거와 함께 명확히 제시됐는가"),
+    ("입지 분석", "입지 요소가 타깃 수요층과 구체적으로 연결됐는가"),
+    ("리스크 반영", "하방 리스크가 구조화되어 반영됐는가"),
+    ("결론 실효성", "실행 방향(분양가 판단·수주 타당성 등)이 근거와 함께 명확히 제시됐는가"),
 ]
-
-KNOWN_AGENT_TAGS = {"claude", "codex"}
-
-
-def extract_bare_id(target_id: str) -> str:
-    return re.sub(r"_KR$", "", target_id)
-
-
-def extract_agent_tag(target_id: str) -> str:
-    bare_id = extract_bare_id(target_id)
-    parts = bare_id.split("_")
-    if parts and parts[-1] in KNOWN_AGENT_TAGS:
-        return parts[-1]
-    return ""
 
 
 def build_step12_names(target_id: str) -> tuple[str, str]:
@@ -83,8 +76,6 @@ def find_report_text(target_id: str) -> tuple[str, Path]:
         ROOTDIR / "04_workspace" / target_id / (f"report_draft_{agent_tag}.docx" if agent_tag else "report_draft.docx"),
         ROOTDIR / "04_workspace" / target_id / "report_designed.docx",
         ROOTDIR / "04_workspace" / target_id / "report_draft.docx",
-        ROOTDIR / "05_output" / f"{extract_bare_id(target_id)}_designed.docx",
-        ROOTDIR / "05_output" / f"{extract_bare_id(target_id)}.docx",
         ROOTDIR / "05_output" / f"{target_id}_designed.docx",
         ROOTDIR / "05_output" / f"{target_id}.docx",
     ]
@@ -106,11 +97,11 @@ def find_report_text(target_id: str) -> tuple[str, Path]:
         if path.exists():
             return path.read_text(encoding="utf-8"), path
 
-    print(f"ERROR: 보고서를 찾을 수 없음: {target_id}")
-    print("검색 경로:")
+    safe_print(f"ERROR: 보고서를 찾을 수 없음: {target_id}", file=sys.stderr)
+    safe_print("검색 경로:", file=sys.stderr)
     for path in docx_candidates + md_candidates:
-        print(f"  {path}")
-    sys.exit(1)
+        safe_print(f"  {path}", file=sys.stderr)
+    sys.exit(EXIT_ERROR)
 
 
 def detect_next_iteration(output_path: Path) -> int:
@@ -209,6 +200,8 @@ def build_review_packet(
 |---|---|---|
 {criteria_lines}
 
+보고서 유형(아파트/상가)에 맞는 세부 기준 표는 `02_plan/STEP12_절차서.md`를 따른다.
+
 ## 리뷰 수행 지침
 1. 보고서 전체를 읽고 먼저 종합 판단을 내린다.
 2. 아래 5개 항목을 각각 A/B/C로 평가한다.
@@ -238,6 +231,7 @@ def write_review_packet(packet_path: Path, content: str):
 
 
 def main():
+    configure_stdout()
     parser = argparse.ArgumentParser(description="STEP12: 에이전트 기반 품질 리뷰 패킷 생성")
     parser.add_argument("target_id", help="분석대상 ID (예: seongsu-residential_KR)")
     parser.add_argument("--reviewer", default=None, help="리뷰 수행 에이전트 이름 (예: codex, claude). 미지정 시 폴더명에서 자동 감지")
@@ -272,17 +266,17 @@ def main():
     packet_path = target_dir / review_packet_name
     write_review_packet(packet_path, packet_content)
 
-    print(f"=== STEP12 리뷰 패킷 생성: {args.target_id} ===")
-    print(f"보고서 소스: {source_path}")
-    print(f"리뷰어: {args.reviewer}")
-    print(f"Iteration: {iteration}")
-    print(f"리뷰 패킷: {packet_path}")
-    print(f"결과 기록 파일: {step12_output_path}")
-    print("")
-    print("다음 단계:")
-    print(f"1. {packet_path.name}를 현재 에이전트에게 읽힌다.")
-    print(f"2. 평가 결과를 {step12_output_path.name}에 Iteration {iteration}로 기록한다.")
-    print("3. PASS가 아니면 보고서를 수정한 뒤 스크립트를 다시 실행한다.")
+    safe_print(f"=== STEP12 리뷰 패킷 생성: {args.target_id} ===")
+    safe_print(f"보고서 소스: {source_path}")
+    safe_print(f"리뷰어: {args.reviewer}")
+    safe_print(f"Iteration: {iteration}")
+    safe_print(f"리뷰 패킷: {packet_path}")
+    safe_print(f"결과 기록 파일: {step12_output_path}")
+    safe_print("")
+    safe_print("다음 단계:")
+    safe_print(f"1. {packet_path.name}를 현재 에이전트에게 읽힌다.")
+    safe_print(f"2. 평가 결과를 {step12_output_path.name}에 Iteration {iteration}로 기록한다.")
+    safe_print("3. PASS가 아니면 보고서를 수정한 뒤 스크립트를 다시 실행한다.")
 
 
 if __name__ == "__main__":

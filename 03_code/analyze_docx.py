@@ -2,12 +2,15 @@
 DOCX 제안서 구조 분석 스크립트
 
 사용 예:
-    python 03_code/analyze_docx.py 04_workspace/seongsu-residential_KR/report_designed.docx
+    python 03_code/analyze_docx.py 04_workspace/[폴더명]/report_designed_[agent].docx
 """
+import argparse
 import os
 import sys
 
 from docx import Document
+
+from _common import EXIT_ERROR, configure_stdout
 
 
 def analyze_document(doc_path):
@@ -67,10 +70,22 @@ def analyze_document(doc_path):
         print(f"  바닥글: {'있음' if footer_text else '없음'}")
 
 
-if __name__ == "__main__":
-    doc_path = sys.argv[1] if len(sys.argv) > 1 else "04_workspace/seongsu-residential_KR/report_designed.docx"
+def main():
+    configure_stdout()
+    parser = argparse.ArgumentParser(description="DOCX 구조 분석")
+    parser.add_argument("path", help="DOCX 파일 경로")
+    args = parser.parse_args()
 
-    if os.path.exists(doc_path):
-        analyze_document(doc_path)
-    else:
-        print(f"파일을 찾을 수 없습니다: {doc_path}")
+    if not os.path.exists(args.path):
+        print(f"ERROR: 파일을 찾을 수 없습니다: {args.path}", file=sys.stderr)
+        sys.exit(EXIT_ERROR)
+
+    try:
+        analyze_document(args.path)
+    except Exception as e:
+        print(f"ERROR: 문서 분석 실패 ({args.path}): {e}", file=sys.stderr)
+        sys.exit(EXIT_ERROR)
+
+
+if __name__ == "__main__":
+    main()

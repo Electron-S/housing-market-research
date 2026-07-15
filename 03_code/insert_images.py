@@ -1,16 +1,20 @@
 """mermaid로 생성한 이미지를 DOCX 부동산 분석 보고서에 삽입한다.
 
-Usage:
-    python insert_images.py 04_workspace/seongsu-residential_KR/report_draft.docx
-    python insert_images.py 04_workspace/seongsu-residential_KR/report_draft.docx 04_workspace/seongsu-residential_KR/report_with_images.docx
+사용 예:
+    python 03_code/insert_images.py 04_workspace/[폴더명]/report_draft_[agent].docx
+    python 03_code/insert_images.py input.docx output.docx --images-dir path/to/images
 
-분석대상 ID는 DOCX 파일명(stem)에서 자동 검출한다.
-이미지는 04_workspace/<분석대상 ID>/images/ 하위의 causal.png, kpi_tree.png를 사용.
+이미지 폴더는 기본적으로 입력 DOCX가 속한 작업 폴더의 images/ 하위를 사용한다.
 
 삽입 로직:
-  - 「※그림1은 별도 이미지로 삽입」 등의 플레이스홀더 단락을 이미지로 치환
-  - 플레이스홀더가 없으면 「그림1」「그림2」 캡션 단락의 직후에 삽입
+  - 「※그림N은 별도 이미지로 삽입」 등의 플레이스홀더 단락을 이미지로 치환
+  - 플레이스홀더가 없으면 「그림N」 캡션 단락의 직후에 삽입
+  - 그림 번호 매핑: 1=causal.png, 2=kpi_tree.png (레거시 호환),
+    그 외 번호는 images/ 내 나머지 PNG를 이름순으로 대응
+
+종료코드: 0=전부 삽입, 1=실행 실패(입력/이미지 없음), 2=일부 또는 전무 삽입
 """
+import argparse
 import re
 import sys
 from pathlib import Path
@@ -19,56 +23,59 @@ from docx import Document
 from docx.shared import Mm, Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 
-ROOTDIR = Path(__file__).resolve().parent.parent
+from _common import (
+    EXIT_ERROR,
+    EXIT_OK,
+    EXIT_PARTIAL,
+    WORKSPACE_DIR,
+    configure_stdout,
+    extract_target_id_from_docx,
+)
 
-# 플레이스홀더 패턴 (부분 일치)
-PLACEHOLDER_PATTERNS = [
-    # (검색 패턴, 이미지 키)
-    (re.compile(r"※.*図1.*画像.*挿入"), "causal"),
-    (re.compile(r"※.*図2.*画像.*挿入"), "kpi"),
-    (re.compile(r"※.*그림\s*1.*이미지.*삽입"), "causal"),
-    (re.compile(r"※.*그림\s*2.*이미지.*삽입"), "kpi"),
-]
+IMAGE_WIDTH_MM = 145
 
-# 플레이스홀더가 없는 경우의 폴백: 캡션 행 직후에 삽입
-CAPTION_PATTERNS = [
-    (re.compile(r"^図1[：:]"), "causal"),
-    (re.compile(r"^図2[：:]"), "kpi"),
-    (re.compile(r"^그림\s*1[：:]"), "causal"),
-    (re.compile(r"^그림\s*2[：:]"), "kpi"),
-]
+# 「※그림N ... 이미지 ... 삽입」 / 「※図N ... 画像 ... 挿入」 플레이스홀더
+PLACEHOLDER_RE = re.compile(r"※.*(?:図|그림)\s*(\d+).*(?:画像|이미지).*(?:挿入|삽입)")
+# 「그림N: ...」 / 「図N: ...」 캡션
+CAPTION_RE = re.compile(r"^(?:図|그림)\s*(\d+)[：:]")
 
-
-def extract_target_id(docx_path: str) -> str:
-    """DOCX 파일명에서 분석대상 ID를 추출한다 (_designed/_draft 및 agent tag 접미사 제거)"""
-    name = Path(docx_path).stem  # 예: "seongsu-residential_KR" 또는 "seongsu-residential_KR_designed"
-    name = re.sub(r'_designed_(claude|codex)$', '', name)
-    name = re.sub(r'_draft_(claude|codex)$', '', name)
-    name = re.sub(r'_designed$', '', name)
-    name = re.sub(r'_draft$', '', name)
-    return name
+# 레거시 그림 번호 → 파일명 매핑
+LEGACY_IMAGE_NAMES = {1: "causal.png", 2: "kpi_tree.png"}
 
 
-def resolve_image_paths(target_id: str) -> dict:
-    """분석대상 ID로부터 이미지 경로를 해석한다"""
-    img_dir = ROOTDIR / "04_workspace" / target_id / "images"
-    if not img_dir.exists():
-        # _KR 접미사 없는 경우도 탐색
-        bare = re.sub(r'_KR$', '', target_id)
-        alt_dir = ROOTDIR / "04_workspace" / bare / "images"
-        if alt_dir.exists():
-            img_dir = alt_dir
-    paths = {
-        "causal": img_dir / "causal.png",
-        "kpi": img_dir / "kpi_tree.png",
-    }
-    for path in paths.values():
-        if not path.exists():
-            print(f"WARNING: 이미지 파일을 찾을 수 없음: {path}")
-    return paths
+def find_figure_numbers(doc) -> set:
+    """문서에서 참조되는 그림 번호를 수집"""
+    numbers = set()
+    for p in doc.paragraphs:
+        text = p.text.strip()
+        if not text:
+            continue
+        m = PLACEHOLDER_RE.search(text) or CAPTION_RE.search(text)
+        if m:
+            numbers.add(int(m.group(1)))
+    return numbers
 
 
-def insert_image_at_paragraph(p, img_path, width_mm=145):
+def build_image_map(img_dir: Path, figure_numbers: set) -> dict:
+    """그림 번호 → 이미지 경로 매핑을 구성"""
+    mapping = {}
+    used_names = set()
+
+    for n, name in LEGACY_IMAGE_NAMES.items():
+        path = img_dir / name
+        if path.exists():
+            mapping[n] = path
+            used_names.add(name)
+
+    extra = [p for p in sorted(img_dir.glob("*.png")) if p.name not in used_names]
+    unmapped = sorted(n for n in figure_numbers if n not in mapping)
+    for n, path in zip(unmapped, extra):
+        mapping[n] = path
+
+    return mapping
+
+
+def insert_image_at_paragraph(p, img_path, width_mm=IMAGE_WIDTH_MM):
     """단락의 텍스트를 지우고 이미지로 치환한다"""
     p.clear()
     p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
@@ -76,7 +83,7 @@ def insert_image_at_paragraph(p, img_path, width_mm=145):
     run.add_picture(str(img_path), width=Mm(width_mm))
 
 
-def add_image_after_paragraph(doc, p, img_path, caption_text, width_mm=145):
+def add_image_after_paragraph(doc, p, img_path, caption_text, width_mm=IMAGE_WIDTH_MM):
     """단락 직후에 이미지와 캡션을 추가한다"""
     # 이미지 단락
     img_p = doc.add_paragraph()
@@ -93,58 +100,88 @@ def add_image_after_paragraph(doc, p, img_path, caption_text, width_mm=145):
     cap_run.font.size = Pt(9)
 
 
-def insert_images(docx_path, output_path, image_paths):
-    doc = Document(docx_path)
-
-    inserted = {"causal": False, "kpi": False}
+def insert_images(doc, image_map: dict) -> dict:
+    """이미지를 삽입하고 번호별 성공 여부를 반환"""
+    inserted = {n: False for n in image_map}
 
     # Phase 1: 플레이스홀더 단락을 이미지로 치환
     for p in doc.paragraphs:
         text = p.text.strip()
         if not text:
             continue
-        for pattern, key in PLACEHOLDER_PATTERNS:
-            if not inserted[key] and pattern.search(text) and image_paths[key].exists():
-                insert_image_at_paragraph(p, image_paths[key])
-                inserted[key] = True
-                print(f"Inserted {key} image (placeholder replacement): {image_paths[key].name}")
+        m = PLACEHOLDER_RE.search(text)
+        if m:
+            n = int(m.group(1))
+            if n in image_map and not inserted[n]:
+                insert_image_at_paragraph(p, image_map[n])
+                inserted[n] = True
+                print(f"Inserted 그림{n} (placeholder replacement): {image_map[n].name}")
 
-    # Phase 2: 플레이스홀더를 찾지 못한 경우 캡션 행 직후에 삽입
+    # Phase 2: 플레이스홀더를 찾지 못한 번호는 캡션 행 직후에 삽입
     if not all(inserted.values()):
         for p in doc.paragraphs:
             text = p.text.strip()
             if not text:
                 continue
-            for pattern, key in CAPTION_PATTERNS:
-                if not inserted[key] and pattern.search(text) and image_paths[key].exists():
-                    add_image_after_paragraph(doc, p, image_paths[key], text)
-                    inserted[key] = True
-                    print(f"Inserted {key} image (after caption): {image_paths[key].name}")
+            m = CAPTION_RE.search(text)
+            if m:
+                n = int(m.group(1))
+                if n in image_map and not inserted[n]:
+                    add_image_after_paragraph(doc, p, image_map[n], text)
+                    inserted[n] = True
+                    print(f"Inserted 그림{n} (after caption): {image_map[n].name}")
 
-    # 결과 요약
-    for key, done in inserted.items():
-        if not done:
-            img = image_paths.get(key)
-            if img and img.exists():
-                print(f"WARNING: {key} image was NOT inserted (no matching text found in document)")
-            else:
-                print(f"SKIP: {key} image file does not exist")
+    return inserted
 
-    doc.save(output_path)
-    print(f"Saved: {output_path}")
+
+def main():
+    configure_stdout()
+    parser = argparse.ArgumentParser(description="DOCX 이미지 플레이스홀더 삽입")
+    parser.add_argument("input", help="입력 DOCX 경로")
+    parser.add_argument("output", nargs="?", help="출력 DOCX 경로 (기본: 입력 파일 덮어쓰기)")
+    parser.add_argument("--images-dir", help="이미지 폴더 (기본: 작업 폴더의 images/)")
+    args = parser.parse_args()
+
+    docx_in = Path(args.input)
+    if not docx_in.exists():
+        print(f"ERROR: 입력 DOCX 없음: {docx_in}", file=sys.stderr)
+        sys.exit(EXIT_ERROR)
+    docx_out = Path(args.output) if args.output else docx_in
+
+    if args.images_dir:
+        img_dir = Path(args.images_dir)
+    else:
+        target_id = extract_target_id_from_docx(docx_in)
+        print(f"분석 대상: {target_id}")
+        img_dir = WORKSPACE_DIR / target_id / "images"
+
+    if not img_dir.exists() or not any(img_dir.glob("*.png")):
+        print(f"ERROR: 삽입할 이미지가 없음: {img_dir}", file=sys.stderr)
+        sys.exit(EXIT_ERROR)
+
+    doc = Document(str(docx_in))
+    figure_numbers = find_figure_numbers(doc)
+    image_map = build_image_map(img_dir, figure_numbers)
+
+    if not image_map:
+        print(f"ERROR: 그림 번호에 대응하는 이미지가 없음: {img_dir}", file=sys.stderr)
+        sys.exit(EXIT_ERROR)
+
+    inserted = insert_images(doc, image_map)
+
+    failed = [n for n, done in inserted.items() if not done]
+    for n in failed:
+        print(f"WARNING: 그림{n} 미삽입 (문서에서 매칭 텍스트를 찾지 못함): {image_map[n].name}")
+
+    doc.save(str(docx_out))
+    print(f"Saved: {docx_out}")
+
+    if failed:
+        print(f"결과: [PARTIAL] {len(inserted) - len(failed)}/{len(inserted)}개 삽입")
+        sys.exit(EXIT_PARTIAL)
+    print(f"결과: [OK] {len(inserted)}개 전부 삽입")
+    sys.exit(EXIT_OK)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python insert_images.py <docx_path> [output_path]")
-        print("Example: python insert_images.py 04_workspace/seongsu-residential_KR/report_draft.docx")
-        sys.exit(1)
-
-    docx_in = sys.argv[1]
-    docx_out = sys.argv[2] if len(sys.argv) > 2 else docx_in
-
-    target_id = extract_target_id(docx_in)
-    print(f"분석 대상: {target_id}")
-
-    image_paths = resolve_image_paths(target_id)
-    insert_images(docx_in, docx_out, image_paths)
+    main()

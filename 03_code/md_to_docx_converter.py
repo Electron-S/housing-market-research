@@ -1,25 +1,37 @@
 """
 Markdown to Word (.docx) Converter — 부동산 분석 보고서
-STEP 12: Markdown→Word 변환 스크립트
+STEP13: Markdown→Word 변환 스크립트
 
 사용법:
-    python md_to_docx_converter.py [분석대상 ID]
+    python md_to_docx_converter.py [작업폴더명]
 
 예:
-    python md_to_docx_converter.py seongsu-residential_KR
+    python md_to_docx_converter.py hanam-regenheim_claude_KR --input STEP11_아파트보고서_draft.md
 """
 
 import argparse
 import os
 import sys
 import re
+from datetime import datetime
 from pathlib import Path
 from docx import Document
-from docx.shared import Pt, Mm, RGBColor
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT, WD_LINE_SPACING
-from docx.oxml.ns import qn
-from docx.oxml import OxmlElement
+from docx.shared import Pt, Mm
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 import csv
+
+from _common import (
+    EXIT_ERROR,
+    ROOTDIR,
+    CharCount,
+    configure_stdout,
+    count_text_chars,
+    extract_agent_tag,
+    log,
+    set_cell_borders,
+    set_run_font,
+    strip_kr_suffix,
+)
 
 # ==================== 설정 ====================
 
@@ -30,11 +42,11 @@ LINE_SPACING = 1.15
 MARGIN_MM = 25
 PARAGRAPH_SPACING_PT = 0
 
-# 표지 설정(언어별 기본값)
+# 표지 설정(언어별 기본값). date는 실행 시점에 계산한다.
 COVER_PRESETS = {
     'ko': {
         'title': '부동산 분석 보고서',
-        'date': '2026년 4월',
+        'date': None,
         'proposer_label': '작성자',
         'code_label': '분석 대상',
         'unknown_name': '대상',
@@ -45,24 +57,19 @@ COVER_PRESETS = {
     },
 }
 COVER_TITLE = COVER_PRESETS['ko']['title']
-PROPOSAL_DATE = COVER_PRESETS['ko']['date']
 PROPOSER_NAME = ''
 
+
+def default_proposal_date():
+    """작성일 기본값 — 실행 시점의 연·월"""
+    return datetime.now().strftime('%Y년 %m월')
+
+
 # 경로 설정
-ROOTDIR = Path(__file__).resolve().parent.parent
 MIDDLE_OUTPUT_DIR = ROOTDIR / '04_workspace'
 PROPERTY_MASTER_PATH = MIDDLE_OUTPUT_DIR / 'property_master.csv'
 
-KNOWN_AGENT_TAGS = {'claude', 'codex'}
-
 # ==================== 유틸리티 함수 ====================
-
-def log(message, level='INFO'):
-    """로그 출력"""
-    try:
-        print(f'[{level}] {message}')
-    except UnicodeEncodeError:
-        print(f'[{level}] {message.encode("ascii", "replace").decode()}')
 
 def get_target_info(target_id, master_csv=None, lang='ko'):
     """분석대상 마스터에서 대상 정보를 가져옴(마스터 CSV가 없으면 target_id를 그대로 사용)"""
@@ -71,7 +78,7 @@ def get_target_info(target_id, master_csv=None, lang='ko'):
     unknown_loc = preset['unknown_loc']
 
     # "_KR" 접미사를 제거한 순수 ID로 조회
-    bare_id = re.sub(r'_KR$', '', str(target_id))
+    bare_id = strip_kr_suffix(target_id)
 
     candidates = []
     if master_csv:
@@ -97,20 +104,6 @@ def get_target_info(target_id, master_csv=None, lang='ko'):
             log(f'분석대상 마스터 읽기 오류 ({path}): {e}', 'WARNING')
 
     return {'code': bare_id, 'name': bare_id, 'location': unknown_loc}
-
-def count_chars(text):
-    """문자수 카운트(공백·개행 제외)"""
-    return len(re.sub(r'\s', '', text))
-
-
-def extract_agent_tag(target_id):
-    """target_id 끝의 에이전트 태그를 추출"""
-    bare_id = re.sub(r'_KR$', '', str(target_id))
-    parts = bare_id.split('_')
-    if parts and parts[-1] in KNOWN_AGENT_TAGS:
-        return parts[-1]
-    return ''
-
 
 def resolve_input_markdown(target_dir: Path, explicit_input: str | None, preset_input: str) -> Path:
     """입력 Markdown 파일을 유연하게 탐색"""
@@ -138,13 +131,8 @@ def resolve_input_markdown(target_dir: Path, explicit_input: str | None, preset_
 # ==================== 포맷 설정 함수 ====================
 
 def set_font(run, font_name=FONT_NAME, size_pt=FONT_SIZE_PT, bold=False, italic=False):
-    """폰트 설정"""
-    run.font.name = font_name
-    run.font.size = Pt(size_pt)
-    run.bold = bold
-    run.italic = italic
-    # 동아시아 폰트 설정(중요)
-    run._element.rPr.rFonts.set(qn('w:eastAsia'), font_name)
+    """폰트 설정(동아시아 폰트 포함)"""
+    set_run_font(run, font_name, size_pt=size_pt, bold=bold, italic=italic)
 
 def set_paragraph_format(paragraph, alignment=WD_PARAGRAPH_ALIGNMENT.LEFT,
                         line_spacing=LINE_SPACING, space_before=0, space_after=0):
@@ -162,20 +150,7 @@ def set_page_margins(section, margin_mm=MARGIN_MM):
     section.left_margin = Mm(margin_mm)
     section.right_margin = Mm(margin_mm)
 
-def set_cell_borders(cell):
-    """표 셀 테두리 설정(검정·실선·0.5pt)"""
-    tc = cell._element
-    tcPr = tc.get_or_add_tcPr()
-
-    tcBorders = OxmlElement('w:tcBorders')
-    for border_name in ['top', 'left', 'bottom', 'right']:
-        border = OxmlElement(f'w:{border_name}')
-        border.set(qn('w:val'), 'single')
-        border.set(qn('w:sz'), '4')  # 0.5pt = 4 eighths of a point
-        border.set(qn('w:color'), '000000')
-        tcBorders.append(border)
-
-    tcPr.append(tcBorders)
+# set_cell_borders는 _common의 공용 구현을 사용한다 (검정·실선·0.5pt 기본값)
 
 # ==================== Markdown 파싱 함수 ====================
 
@@ -274,7 +249,7 @@ def create_cover_page(doc, target_info, cover_metadata=None, cover_config=None):
     meta = cover_metadata or {}
     cfg = cover_config or {
         'title': COVER_TITLE,
-        'date': PROPOSAL_DATE,
+        'date': default_proposal_date(),
         'proposer': PROPOSER_NAME,
         'proposer_label': '작성자',
         'code_label': '분석 대상',
@@ -414,7 +389,7 @@ def convert_markdown_to_docx(md_file_path, output_file_path, target_id, lang='ko
     preset = COVER_PRESETS.get(lang, COVER_PRESETS['ko'])
     cover_config = {
         'title': preset['title'],
-        'date': preset['date'],
+        'date': preset['date'] or default_proposal_date(),
         'proposer': PROPOSER_NAME,
         'proposer_label': preset['proposer_label'],
         'code_label': preset['code_label'],
@@ -444,7 +419,12 @@ def convert_markdown_to_docx(md_file_path, output_file_path, target_id, lang='ko
 
     # 본문 처리(표지 부분은 스킵)
     idx = skip_lines
-    total_chars = 0
+    char_count = CharCount(0, 0)
+
+    def add_chars(text):
+        nonlocal char_count
+        c = count_text_chars(text)
+        char_count = CharCount(char_count.total + c.total, char_count.no_space + c.no_space)
 
     while idx < len(lines):
         line = lines[idx].rstrip()
@@ -463,7 +443,7 @@ def convert_markdown_to_docx(md_file_path, output_file_path, target_id, lang='ko
                 set_font(run, bold=True)
             set_paragraph_format(p)
             log(f'제목1 처리: {text}')
-            total_chars += count_chars(text)
+            add_chars(text)
             idx += 1
 
         # 제목2(## )
@@ -475,7 +455,7 @@ def convert_markdown_to_docx(md_file_path, output_file_path, target_id, lang='ko
                 set_font(run, bold=True)
             set_paragraph_format(p)
             log(f'제목2 처리: {text}')
-            total_chars += count_chars(text)
+            add_chars(text)
             idx += 1
 
         # 제목3(### )
@@ -487,7 +467,7 @@ def convert_markdown_to_docx(md_file_path, output_file_path, target_id, lang='ko
                 set_font(run, bold=True)
             set_paragraph_format(p)
             log(f'제목3 처리: {text}')
-            total_chars += count_chars(text)
+            add_chars(text)
             idx += 1
 
         # 표(|로 시작)
@@ -498,7 +478,7 @@ def convert_markdown_to_docx(md_file_path, output_file_path, target_id, lang='ko
                 # 표 내의 문자수를 카운트
                 for row in table_data['data']:
                     for cell in row:
-                        total_chars += count_chars(cell)
+                        add_chars(cell)
             idx = next_idx
 
         # 불릿 항목
@@ -518,31 +498,33 @@ def convert_markdown_to_docx(md_file_path, output_file_path, target_id, lang='ko
                 set_paragraph_format(p)
                 # 들여쓰기 설정
                 p.paragraph_format.left_indent = Mm(5 * level)
-                total_chars += count_chars(text)
+                add_chars(text)
 
             log(f'불렛 처리: {len(list_items)}항목')
 
         # 일반 단락
         else:
             add_paragraph_with_formatting(doc, line)
-            total_chars += count_chars(line)
+            add_chars(line)
             idx += 1
 
     # 문서 저장
     log(f'Word 문서 저장 중: {output_file_path}')
     doc.save(output_file_path)
     log(f'저장 완료: {output_file_path}')
-    log(f'총 문자수(개산): {total_chars:,}자')
+    log(f'총 문자수(개산): 공백포함 {char_count.total:,}자 / 공백제외 {char_count.no_space:,}자')
+    log('정식 판정은 count_docx_chars.py (STEP13/14) 결과를 기준으로 한다.')
 
     return True
 
 # ==================== 메인 처리 ====================
 
 def main():
+    configure_stdout()
     parser = argparse.ArgumentParser(
         description='Markdown→Word 변환 — 부동산 분석 보고서',
     )
-    parser.add_argument('target_id', help='분석대상 ID (예: seongsu-residential_KR, songpa-helio-city_KR)')
+    parser.add_argument('target_id', help='작업 폴더명 (예: hanam-regenheim_claude_KR)')
     parser.add_argument('--lang', choices=['ko'], default='ko', help='출력 언어 (기본: ko)')
     parser.add_argument('--input', help='입력 Markdown 파일명(기본: STEP11_보고서_draft.md, 없으면 STEP11_*_draft.md 자동 탐색)')
     parser.add_argument('--output', help='출력 DOCX 파일 경로')
@@ -587,8 +569,7 @@ def main():
         log('다음 단계: improve_docx_design.py 또는 insert_images.py 실행')
     else:
         log('========== 변환 실패 ==========', 'ERROR')
-        print(f'\n❌ 변환 실패')
-        sys.exit(1)
+        sys.exit(EXIT_ERROR)
 
 if __name__ == '__main__':
     main()
