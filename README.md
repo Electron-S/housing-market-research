@@ -33,7 +33,9 @@ STEP0~STEP15의 16단계 분석·집필 파이프라인으로 운영한다.
 | 12 | 품질 리뷰 (MD) | `STEP12_output_[agent].md` |
 | 13 | MD→DOCX 변환 | `report_designed_[agent].docx` |
 | 14 | 품질 리뷰 (DOCX) | `STEP14_output.md` |
-| 15 | 최종화 | `05_output/[target_id]_designed.docx` |
+| 15 | 최종화 | `STEP15_output.md` + `05_output/[폴더명]_designed.docx` |
+
+> `[폴더명]` = 작업 폴더명 `[target_id]_[agent]_KR` (용어 정의: CLAUDE.md)
 
 **STEP12 품질 리뷰 원칙**: 실행 중인 에이전트(Claude 또는 Codex)가 보고서를 직접 5개 기준으로 평가하고 최대 3회 반복한다. 에이전트별 결과는 별도 파일로 누적돼 추후 품질 비교에 활용된다.
 
@@ -56,6 +58,7 @@ housing-market-research/
 │   ├── STEP12_review_packet_[agent].md
 │   ├── STEP12_output_[agent].md
 │   ├── STEP14_output.md
+│   ├── STEP15_output.md
 │   ├── report_draft_[agent].docx
 │   ├── report_designed_[agent].docx
 │   └── images/
@@ -74,32 +77,11 @@ housing-market-research/
 | `analyze_docx.py` | DOCX 구조 분석 | 14 |
 | `insert_images.py` | DOCX 이미지 플레이스홀더 삽입 | 13 |
 
-### STEP13 변환 전체 실행 순서
+### 스크립트 실행 커맨드
 
-```bash
-# STEP13: MD → DOCX
-.venv/bin/python 03_code/md_to_docx_converter.py [target_id]_[agent]_KR \
-  --input STEP11_아파트보고서_draft.md
-
-# STEP13: 디자인 보정
-.venv/bin/python 03_code/improve_docx_design.py \
-  04_workspace/[target_id]_[agent]_KR/report_draft_[agent].docx \
-  04_workspace/[target_id]_[agent]_KR/report_designed_[agent].docx
-
-# STEP13: 문자수 검증
-.venv/bin/python 03_code/count_docx_chars.py \
-  04_workspace/[target_id]_[agent]_KR/report_designed_[agent].docx
-```
-
-### STEP12 품질 리뷰 실행
-
-```bash
-# 폴더명에 에이전트 태그(_claude_KR / _codex_KR)가 있으면 자동 감지
-.venv/bin/python 03_code/multi_model_evaluate.py [target_id]_[agent]_KR
-
-# 태그가 없을 경우 명시
-.venv/bin/python 03_code/multi_model_evaluate.py [target_id]_KR --reviewer claude
-```
+- STEP12 품질 리뷰 커맨드 정본: [`02_plan/STEP12_절차서.md`](02_plan/STEP12_절차서.md)
+- STEP13 변환·디자인·문자수 검증 커맨드 정본: [`02_plan/STEP13_절차서.md`](02_plan/STEP13_절차서.md)
+- 공통 종료코드: `0`=성공/합격, `1`=실행 실패, `2`=부분 실패/검증 불합격
 
 ## 상가 시장조사 추가 원칙
 

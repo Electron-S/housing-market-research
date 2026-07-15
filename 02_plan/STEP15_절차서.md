@@ -18,18 +18,18 @@ STEP14 PASS 후 최종 DOCX를 `05_output/`에 확정 배치하고, 파일명·�
 ls 05_output/
 ```
 
-- 파일명 기본: `[target_id]_designed.docx`
+- 파일명 정본: `[폴더명]_designed.docx` (폴더명 = `[target_id]_[agent]_KR`)
 - 예시: `hanam-regenheim_claude_KR_designed.docx`
 
 파일이 없으면 수동 복사:
 ```bash
 cp 04_workspace/[target_id]_[agent]_KR/report_designed_[agent].docx \
-   05_output/[target_id]_designed.docx
+   05_output/[target_id]_[agent]_KR_designed.docx
 ```
 
 ### Step 2. 최종 체크리스트
 
-- [ ] `05_output/[target_id]_designed.docx` 존재 확인
+- [ ] `05_output/[폴더명]_designed.docx` 존재 확인
 - [ ] 파일 열어서 표지·본문·결론 육안 확인
 - [ ] STEP12 REVISE 지적 사항이 최종본에 반영됐는가
 - [ ] STEP14 미통과 항목이 없는가
@@ -39,7 +39,7 @@ cp 04_workspace/[target_id]_[agent]_KR/report_designed_[agent].docx \
 
 ```bash
 # 예: D 드라이브 복사 (WSL 환경)
-cp 05_output/[target_id]_designed.docx /mnt/d/[파일명].docx
+cp 05_output/[폴더명]_designed.docx /mnt/d/[파일명].docx
 ```
 
 ## 산출물 최종 목록
@@ -53,7 +53,8 @@ cp 05_output/[target_id]_designed.docx /mnt/d/[파일명].docx
 | `STEP14_output.md` | `04_workspace/[target_id]_[agent]_KR/` | DOCX 검증 결과 |
 | `report_draft_[agent].docx` | `04_workspace/[target_id]_[agent]_KR/` | 변환 초안 DOCX |
 | `report_designed_[agent].docx` | `04_workspace/[target_id]_[agent]_KR/` | 디자인 보정 DOCX |
-| **`[target_id]_designed.docx`** | **`05_output/`** | **최종 납품 파일** |
+| `STEP15_output.md` | `04_workspace/[target_id]_[agent]_KR/` | 최종화 기록 |
+| **`[폴더명]_designed.docx`** | **`05_output/`** | **최종 납품 파일** |
 
 ## STEP15_output.md 기록 형식
 
@@ -61,7 +62,7 @@ cp 05_output/[target_id]_designed.docx /mnt/d/[파일명].docx
 ## STEP15 최종화 완료
 
 - 완료 일시: YYYY-MM-DD
-- 최종 파일: `05_output/[target_id]_designed.docx`
+- 최종 파일: `05_output/[폴더명]_designed.docx`
 - 문자수: [N]자
 - STEP12 Iteration 수: [N]회
 - 에이전트: [claude / codex]

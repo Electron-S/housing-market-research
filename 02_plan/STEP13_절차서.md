@@ -31,7 +31,7 @@ STEP12 PASS를 받은 Markdown 초안을 Word 문서로 변환하고, 디자인 
 ```
 
 - 제목 스타일, 표 헤더 배경색, 테두리선, 헤더/푸터, 페이지 번호 적용
-- 출력: `report_designed_[agent].docx` (작업 폴더) + `05_output/[target_id]_designed.docx` (최종 출력 폴더)
+- 출력: `report_designed_[agent].docx` (작업 폴더) + `05_output/[폴더명]_designed.docx` (스크립트가 자동 배치)
 
 ### Step 3. 문자수 검증
 
@@ -43,8 +43,8 @@ STEP12 PASS를 받은 Markdown 초안을 Word 문서로 변환하고, 디자인 
 | 결과 | 조치 |
 |---|---|
 | 8,000~12,000자 | STEP14 진행 |
-| 8,000자 미만 | STEP11로 복귀 — 분석 내용 보강 후 STEP12 재수행 |
-| 12,000자 초과 | STEP11로 복귀 — 중복 내용 제거 후 STEP12 재수행 |
+| 8,000자 미만 | STEP11 복귀(분석 내용 보강) → STEP12 재수행 → STEP13 재수행 |
+| 12,000자 초과 | STEP11 복귀(중복 내용 제거) → STEP12 재수행 → STEP13 재수행 |
 
 > 문자수 미달·초과 시 STEP12를 건너뛰지 않는다. 내용 변경이 발생했으므로 품질 리뷰를 반드시 재수행한다.
 
@@ -52,14 +52,14 @@ STEP12 PASS를 받은 Markdown 초안을 Word 문서로 변환하고, 디자인 
 
 - [ ] `report_draft_[agent].docx` 생성 확인
 - [ ] `report_designed_[agent].docx` 생성 확인
-- [ ] `05_output/[target_id]_designed.docx` 생성 확인
+- [ ] `05_output/[폴더명]_designed.docx` 생성 확인
 - [ ] 문자수 8,000~12,000자 범위 확인
 
 ## 산출물
 
 - `04_workspace/[target_id]_[agent]_KR/report_draft_[agent].docx`
 - `04_workspace/[target_id]_[agent]_KR/report_designed_[agent].docx`
-- `05_output/[target_id]_designed.docx`
+- `05_output/[폴더명]_designed.docx`
 
 ## 다음 단계
 
